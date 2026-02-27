@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>todo-app — Design Direction Mockups</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f5f5; color: #0a0a0a; }
+
+  /* Navigation */
+  .nav { position: fixed; top: 0; left: 0; right: 0; background: #171717; color: #fff; z-index: 100; padding: 12px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .nav h1 { font-size: 14px; font-weight: 500; white-space: nowrap; }
+  .nav-pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .nav-pill { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-size: 13px; font-family: inherit; transition: all 0.2s; }
+  .nav-pill:hover, .nav-pill.active { background: #fff; color: #171717; }
+
+  /* Mockup container */
+  .mockup-section { display: none; min-height: 100vh; padding: 80px 24px 48px; }
+  .mockup-section.active { display: block; }
+  .mockup-header { max-width: 720px; margin: 0 auto 32px; }
+  .mockup-header h2 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  .mockup-header p { font-size: 14px; color: #737373; line-height: 1.5; }
+  .mockup-tags { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .mockup-tag { font-size: 11px; background: #e5e5e5; color: #525252; padding: 2px 8px; border-radius: 4px; }
+
+  /* Shared mockup frame */
+  .frame { max-width: 640px; margin: 0 auto; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08); }
+
+  /* ========== DIRECTION A: Clean Minimal ========== */
+  .dir-a { background: #fff; }
+  .dir-a .app-title { padding: 24px 24px 16px; font-size: 24px; font-weight: 600; }
+  .dir-a .input-area { padding: 0 24px 16px; display: flex; gap: 8px; }
+  .dir-a .input-area input { flex: 1; padding: 10px 14px; border: 1px solid #e5e5e5; border-radius: 6px; font-size: 16px; font-family: inherit; outline: none; }
+  .dir-a .input-area input:focus { border-color: #171717; }
+  .dir-a .input-area button { background: #171717; color: #fff; border: none; padding: 10px 18px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit; white-space: nowrap; }
+  .dir-a .tabs { display: flex; padding: 0 24px; border-bottom: 1px solid #e5e5e5; }
+  .dir-a .tab { padding: 10px 16px; font-size: 14px; font-weight: 500; color: #737373; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .dir-a .tab.active { color: #0a0a0a; border-bottom-color: #171717; }
+  .dir-a .todo-list { padding: 0; }
+  .dir-a .todo-row { display: flex; align-items: center; padding: 12px 24px; border-bottom: 1px solid #f5f5f5; gap: 12px; }
+  .dir-a .todo-row:hover { background: #fafafa; }
+  .dir-a .checkbox { width: 18px; height: 18px; border: 2px solid #d4d4d4; border-radius: 4px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .dir-a .checkbox.checked { background: #171717; border-color: #171717; }
+  .dir-a .checkbox.checked::after { content: '✓'; color: #fff; font-size: 12px; }
+  .dir-a .todo-text { flex: 1; font-size: 16px; line-height: 1.5; }
+  .dir-a .todo-text.completed { color: #737373; text-decoration: line-through; }
+  .dir-a .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dir-a .status-dot.syncing { background: #3b82f6; animation: pulse 1.5s infinite; }
+  .dir-a .status-dot.error { background: #ef4444; }
+  .dir-a .todo-actions { display: flex; gap: 6px; opacity: 0; transition: opacity 0.15s; }
+  .dir-a .todo-row:hover .todo-actions { opacity: 1; }
+  .dir-a .action-btn { background: none; border: 1px solid #e5e5e5; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px; font-family: inherit; color: #737373; }
+  .dir-a .action-btn:hover { background: #f5f5f5; }
+  .dir-a .action-btn.delete:hover { color: #ef4444; border-color: #fca5a5; background: #fef2f2; }
+  .dir-a .todo-row.error-row { background: #fef2f2; border-left: 3px solid #ef4444; }
+  .dir-a .todo-row.error-row .todo-actions { opacity: 1; }
+  .dir-a .error-msg { font-size: 13px; color: #ef4444; margin-top: 2px; }
+  .dir-a .todo-row.syncing-row { opacity: 0.6; pointer-events: none; }
+  .dir-a .load-more { text-align: center; padding: 16px; }
+  .dir-a .load-more button { background: none; border: 1px solid #e5e5e5; border-radius: 6px; padding: 8px 20px; font-size: 14px; cursor: pointer; font-family: inherit; color: #737373; }
+
+  /* ========== DIRECTION B: Card Elevated ========== */
+  .dir-b { background: #f5f5f5; padding: 24px; }
+  .dir-b .app-title { font-size: 24px; font-weight: 600; margin-bottom: 16px; }
+  .dir-b .input-card { background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); margin-bottom: 16px; display: flex; gap: 8px; }
+  .dir-b .input-card input { flex: 1; border: none; font-size: 16px; outline: none; font-family: inherit; }
+  .dir-b .input-card button { background: #171717; color: #fff; border: none; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit; }
+  .dir-b .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+  .dir-b .tab { padding: 8px 16px; font-size: 13px; font-weight: 500; border-radius: 8px; cursor: pointer; color: #737373; background: #fff; border: 1px solid #e5e5e5; }
+  .dir-b .tab.active { background: #171717; color: #fff; border-color: #171717; }
+  .dir-b .todo-card { background: #fff; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); margin-bottom: 8px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
+  .dir-b .todo-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  .dir-b .checkbox { width: 20px; height: 20px; border: 2px solid #d4d4d4; border-radius: 50%; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .dir-b .checkbox.checked { background: #171717; border-color: #171717; }
+  .dir-b .checkbox.checked::after { content: '✓'; color: #fff; font-size: 12px; }
+  .dir-b .todo-text { flex: 1; font-size: 16px; }
+  .dir-b .todo-text.completed { color: #a3a3a3; text-decoration: line-through; }
+  .dir-b .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dir-b .status-dot.syncing { background: #3b82f6; animation: pulse 1.5s infinite; }
+  .dir-b .todo-actions { display: flex; gap: 4px; }
+  .dir-b .action-btn { background: none; border: none; padding: 6px; cursor: pointer; font-size: 16px; color: #a3a3a3; border-radius: 6px; }
+  .dir-b .action-btn:hover { background: #f5f5f5; color: #ef4444; }
+  .dir-b .todo-card.error-card { border-left: 3px solid #ef4444; background: #fef2f2; }
+  .dir-b .todo-card.syncing-card { opacity: 0.5; }
+
+  /* ========== DIRECTION C: Bordered Structured ========== */
+  .dir-c { background: #fff; border: 1px solid #e5e5e5; }
+  .dir-c .app-header { padding: 20px 24px; border-bottom: 1px solid #e5e5e5; display: flex; align-items: center; justify-content: space-between; }
+  .dir-c .app-title { font-size: 20px; font-weight: 600; }
+  .dir-c .sort-btn { background: none; border: 1px solid #e5e5e5; border-radius: 6px; padding: 6px 12px; font-size: 13px; cursor: pointer; font-family: inherit; color: #737373; display: flex; align-items: center; gap: 4px; }
+  .dir-c .input-area { padding: 16px 24px; border-bottom: 1px solid #e5e5e5; display: flex; gap: 8px; }
+  .dir-c .input-area input { flex: 1; padding: 10px 14px; border: 1px solid #e5e5e5; border-radius: 6px; font-size: 16px; font-family: inherit; outline: none; background: #fafafa; }
+  .dir-c .input-area input:focus { background: #fff; border-color: #171717; }
+  .dir-c .input-area button { background: #171717; color: #fff; border: none; padding: 10px 18px; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit; }
+  .dir-c .tabs { display: flex; border-bottom: 1px solid #e5e5e5; }
+  .dir-c .tab { flex: 1; text-align: center; padding: 12px; font-size: 14px; font-weight: 500; color: #737373; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .dir-c .tab.active { color: #0a0a0a; border-bottom-color: #171717; background: #fafafa; }
+  .dir-c .todo-row { display: flex; align-items: center; padding: 14px 24px; border-bottom: 1px solid #e5e5e5; gap: 12px; }
+  .dir-c .todo-row:last-child { border-bottom: none; }
+  .dir-c .checkbox { width: 18px; height: 18px; border: 2px solid #d4d4d4; border-radius: 3px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .dir-c .checkbox.checked { background: #171717; border-color: #171717; }
+  .dir-c .checkbox.checked::after { content: '✓'; color: #fff; font-size: 11px; }
+  .dir-c .todo-text { flex: 1; font-size: 15px; }
+  .dir-c .todo-text.completed { color: #737373; text-decoration: line-through; }
+  .dir-c .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dir-c .status-dot.syncing { background: #3b82f6; animation: pulse 1.5s infinite; }
+  .dir-c .todo-meta { font-size: 12px; color: #a3a3a3; }
+  .dir-c .action-btn { background: none; border: none; padding: 4px 8px; cursor: pointer; font-size: 14px; color: #a3a3a3; }
+  .dir-c .action-btn:hover { color: #ef4444; }
+  .dir-c .todo-row.error-row { background: #fef2f2; }
+  .dir-c .error-actions { display: flex; gap: 6px; }
+  .dir-c .error-actions button { font-size: 12px; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-family: inherit; }
+  .dir-c .retry-btn { background: #171717; color: #fff; border: none; }
+  .dir-c .delete-btn { background: none; border: 1px solid #fca5a5; color: #ef4444; }
+
+  /* ========== DIRECTION D: Ultra Minimal ========== */
+  .dir-d { background: #fff; }
+  .dir-d .app-title { padding: 32px 24px 24px; font-size: 28px; font-weight: 600; letter-spacing: -0.5px; }
+  .dir-d .input-area { padding: 0 24px 24px; }
+  .dir-d .input-area input { width: 100%; border: none; border-bottom: 2px solid #e5e5e5; padding: 12px 0; font-size: 16px; font-family: inherit; outline: none; }
+  .dir-d .input-area input:focus { border-bottom-color: #171717; }
+  .dir-d .tabs { display: flex; padding: 0 24px; gap: 24px; margin-bottom: 8px; }
+  .dir-d .tab { font-size: 13px; font-weight: 500; color: #a3a3a3; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; padding-bottom: 8px; }
+  .dir-d .tab.active { color: #0a0a0a; border-bottom: 2px solid #0a0a0a; }
+  .dir-d .todo-row { display: flex; align-items: center; padding: 16px 24px; gap: 16px; border-bottom: 1px solid #f5f5f5; }
+  .dir-d .checkbox { width: 22px; height: 22px; border: 1.5px solid #d4d4d4; border-radius: 50%; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .dir-d .checkbox:hover { border-color: #171717; }
+  .dir-d .checkbox.checked { background: none; border-color: #a3a3a3; }
+  .dir-d .checkbox.checked::after { content: '✓'; color: #a3a3a3; font-size: 13px; }
+  .dir-d .todo-text { flex: 1; font-size: 16px; line-height: 1.5; }
+  .dir-d .todo-text.completed { color: #a3a3a3; text-decoration: line-through; }
+  .dir-d .status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .dir-d .status-dot.syncing { background: #3b82f6; animation: pulse 1.5s infinite; }
+  .dir-d .status-dot.error { background: #ef4444; }
+  .dir-d .action-btn { background: none; border: none; padding: 4px; cursor: pointer; color: #d4d4d4; font-size: 18px; }
+  .dir-d .action-btn:hover { color: #ef4444; }
+  .dir-d .todo-row.error-row { padding-left: 21px; border-left: 3px solid #ef4444; }
+  .dir-d .error-inline { display: flex; align-items: center; gap: 8px; }
+  .dir-d .error-inline span { font-size: 12px; color: #ef4444; }
+
+  /* ========== DIRECTION E: Compact Dense ========== */
+  .dir-e { background: #fff; }
+  .dir-e .app-bar { display: flex; align-items: center; padding: 12px 16px; gap: 12px; border-bottom: 1px solid #e5e5e5; background: #fafafa; }
+  .dir-e .app-title { font-size: 16px; font-weight: 600; }
+  .dir-e .app-bar .tabs { display: flex; gap: 4px; margin-left: auto; }
+  .dir-e .app-bar .tab { padding: 4px 12px; font-size: 12px; font-weight: 500; border-radius: 4px; cursor: pointer; color: #737373; }
+  .dir-e .app-bar .tab.active { background: #171717; color: #fff; }
+  .dir-e .sort-toggle { background: none; border: 1px solid #e5e5e5; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; font-family: inherit; color: #737373; }
+  .dir-e .input-area { display: flex; padding: 8px 16px; gap: 6px; border-bottom: 1px solid #e5e5e5; }
+  .dir-e .input-area input { flex: 1; padding: 6px 10px; border: 1px solid #e5e5e5; border-radius: 4px; font-size: 14px; font-family: inherit; outline: none; }
+  .dir-e .input-area button { background: #171717; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 500; cursor: pointer; font-family: inherit; }
+  .dir-e .todo-row { display: flex; align-items: center; padding: 8px 16px; border-bottom: 1px solid #f5f5f5; gap: 8px; font-size: 14px; }
+  .dir-e .todo-row:hover { background: #fafafa; }
+  .dir-e .checkbox { width: 14px; height: 14px; border: 1.5px solid #d4d4d4; border-radius: 3px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+  .dir-e .checkbox.checked { background: #171717; border-color: #171717; }
+  .dir-e .checkbox.checked::after { content: '✓'; color: #fff; font-size: 9px; }
+  .dir-e .todo-text { flex: 1; }
+  .dir-e .todo-text.completed { color: #a3a3a3; text-decoration: line-through; }
+  .dir-e .status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .dir-e .status-dot.syncing { background: #3b82f6; animation: pulse 1.5s infinite; }
+  .dir-e .action-btn { background: none; border: none; cursor: pointer; color: #d4d4d4; font-size: 14px; padding: 2px; opacity: 0; }
+  .dir-e .todo-row:hover .action-btn { opacity: 1; }
+  .dir-e .action-btn:hover { color: #ef4444; }
+  .dir-e .todo-row.error-row { background: #fef2f2; }
+  .dir-e .todo-row.error-row .action-btn { opacity: 1; }
+
+  /* ========== DIRECTION F: Soft Rounded ========== */
+  .dir-f { background: #fafaf9; padding: 24px; }
+  .dir-f .app-title { font-size: 22px; font-weight: 600; margin-bottom: 20px; color: #171717; }
+  .dir-f .input-area { display: flex; gap: 10px; margin-bottom: 20px; }
+  .dir-f .input-area input { flex: 1; padding: 12px 18px; border: 2px solid #e7e5e4; border-radius: 12px; font-size: 16px; font-family: inherit; outline: none; background: #fff; }
+  .dir-f .input-area input:focus { border-color: #171717; }
+  .dir-f .input-area button { background: #171717; color: #fff; border: none; padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit; }
+  .dir-f .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .dir-f .tab { padding: 8px 20px; font-size: 14px; font-weight: 500; border-radius: 10px; cursor: pointer; color: #78716c; background: #fff; border: 2px solid #e7e5e4; transition: all 0.15s; }
+  .dir-f .tab.active { background: #171717; color: #fff; border-color: #171717; }
+  .dir-f .todo-row { display: flex; align-items: center; padding: 14px 18px; gap: 14px; background: #fff; border-radius: 10px; margin-bottom: 8px; border: 2px solid #e7e5e4; transition: border-color 0.15s; }
+  .dir-f .todo-row:hover { border-color: #d6d3d1; }
+  .dir-f .checkbox { width: 22px; height: 22px; border: 2px solid #d6d3d1; border-radius: 6px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .dir-f .checkbox:hover { border-color: #171717; }
+  .dir-f .checkbox.checked { background: #171717; border-color: #171717; }
+  .dir-f .checkbox.checked::after { content: '✓'; color: #fff; font-size: 13px; }
+  .dir-f .todo-text { flex: 1; font-size: 16px; }
+  .dir-f .todo-text.completed { color: #a8a29e; text-decoration: line-through; }
+  .dir-f .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dir-f .status-dot.syncing { background: #3b82f6; animation: pulse 1.5s infinite; }
+  .dir-f .action-btn { background: none; border: none; cursor: pointer; color: #d6d3d1; font-size: 18px; padding: 4px; border-radius: 6px; }
+  .dir-f .action-btn:hover { color: #ef4444; background: #fef2f2; }
+  .dir-f .todo-row.error-row { border-color: #fca5a5; background: #fef2f2; }
+  .dir-f .error-msg { font-size: 12px; color: #ef4444; margin-top: 4px; }
+
+  /* Animations */
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+  /* Responsive */
+  @media (max-width: 767px) {
+    .frame { border-radius: 0; box-shadow: none; }
+    .nav { padding: 10px 12px; }
+    .nav h1 { font-size: 12px; }
+    .nav-pill { font-size: 11px; padding: 4px 10px; }
+    .dir-a .todo-actions, .dir-e .action-btn { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<nav class="nav">
+  <h1>todo-app Directions</h1>
+  <div class="nav-pills">
+    <button class="nav-pill active" onclick="show('a')">A: Clean Minimal</button>
+    <button class="nav-pill" onclick="show('b')">B: Card Elevated</button>
+    <button class="nav-pill" onclick="show('c')">C: Bordered Structured</button>
+    <button class="nav-pill" onclick="show('d')">D: Ultra Minimal</button>
+    <button class="nav-pill" onclick="show('e')">E: Compact Dense</button>
+    <button class="nav-pill" onclick="show('f')">F: Soft Rounded</button>
+  </div>
+</nav>
+
+<!-- DIRECTION A: Clean Minimal -->
+<section id="sec-a" class="mockup-section active">
+  <div class="mockup-header">
+    <h2>Direction A: Clean Minimal</h2>
+    <p>Flat list with hover-reveal actions. Thin borders as separators. Maximum content focus with minimal chrome. Actions appear on hover — clean at rest, functional on interaction.</p>
+    <div class="mockup-tags"><span class="mockup-tag">flat list</span><span class="mockup-tag">hover actions</span><span class="mockup-tag">thin borders</span><span class="mockup-tag">understated</span></div>
+  </div>
+  <div class="frame dir-a">
+    <div class="app-title">todos</div>
+    <div class="input-area">
+      <input type="text" placeholder="What needs to be done?">
+      <button>Add Todo</button>
+    </div>
+    <div class="tabs">
+      <div class="tab active">Active</div>
+      <div class="tab">Completed</div>
+    </div>
+    <div class="todo-list">
+      <div class="todo-row syncing-row">
+        <div class="checkbox"></div>
+        <div class="todo-text">Deploy to production</div>
+        <div class="status-dot syncing"></div>
+      </div>
+      <div class="todo-row">
+        <div class="checkbox"></div>
+        <div class="todo-text">Write unit tests for state machine</div>
+        <div class="todo-actions"><button class="action-btn delete">×</button></div>
+      </div>
+      <div class="todo-row">
+        <div class="checkbox"></div>
+        <div class="todo-text">Review PR feedback</div>
+        <div class="todo-actions"><button class="action-btn delete">×</button></div>
+      </div>
+      <div class="todo-row error-row">
+        <div class="checkbox"></div>
+        <div class="todo-text">
+          Fix cursor pagination bug
+          <div class="error-msg">Network error — request timed out</div>
+        </div>
+        <div class="status-dot error"></div>
+        <div class="todo-actions">
+          <button class="action-btn">↻</button>
+          <button class="action-btn delete">×</button>
+        </div>
+      </div>
+      <div class="todo-row">
+        <div class="checkbox"></div>
+        <div class="todo-text">Set up Docker Compose stack</div>
+        <div class="todo-actions"><button class="action-btn delete">×</button></div>
+      </div>
+      <div class="todo-row">
+        <div class="checkbox checked"></div>
+        <div class="todo-text completed">Design data model schema</div>
+        <div class="todo-actions"><button class="action-btn delete">×</button></div>
+      </div>
+    </div>
+    <div class="load-more"><button>Load more</button></div>
+  </div>
+</section>
+
+<!-- DIRECTION B: Card Elevated -->
+<section id="sec-b" class="mockup-section">
+  <div class="mockup-header">
+    <h2>Direction B: Card Elevated</h2>
+    <p>Each todo is an individual card with subtle shadow. Pill-shaped tab buttons. Input lives in its own card. Slightly more visual weight — each item feels like a tangible object.</p>
+    <div class="mockup-tags"><span class="mockup-tag">individual cards</span><span class="mockup-tag">pill tabs</span><span class="mockup-tag">shadows</span><span class="mockup-tag">round checkboxes</span></div>
+  </div>
+  <div class="frame dir-b">
+    <div class="app-title">todos</div>
+    <div class="input-card">
+      <input type="text" placeholder="What needs to be done?">
+      <button>Add</button>
+    </div>
+    <div class="tabs">
+      <div class="tab active">Active</div>
+      <div class="tab">Completed</div>
+    </div>
+    <div class="todo-card syncing-card">
+      <div class="checkbox"></div>
+      <div class="todo-text">Deploy to production</div>
+      <div class="status-dot syncing"></div>
+    </div>
+    <div class="todo-card">
+      <div class="checkbox"></div>
+      <div class="todo-text">Write unit tests for state machine</div>
+      <div class="todo-actions"><button class="action-btn">×</button></div>
+    </div>
+    <div class="todo-card">
+      <div class="checkbox"></div>
+      <div class="todo-text">Review PR feedback</div>
+      <div class="todo-actions"><button class="action-btn">×</button></div>
+    </div>
+    <div class="todo-card error-card">
+      <div class="checkbox"></div>
+      <div class="todo-text">Fix cursor pagination bug</div>
+      <div class="todo-actions">
+        <button class="action-btn">↻</button>
+        <button class="action-btn">×</button>
+      </div>
+    </div>
+    <div class="todo-card">
+      <div class="checkbox"></div>
+      <div class="todo-text">Set up Docker Compose stack</div>
+      <div class="todo-actions"><button class="action-btn">×</button></div>
+    </div>
+    <div class="todo-card">
+      <div class="checkbox checked"></div>
+      <div class="todo-text completed">Design data model schema</div>
+      <div class="todo-actions"><button class="action-btn">×</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- DIRECTION C: Bordered Structured -->
+<section id="sec-c" class="mockup-section">
+  <div class="mockup-header">
+    <h2>Direction C: Bordered Structured</h2>
+    <p>Strong borders define structure. Header bar with sort control. Full-width tabs. Timestamps visible. Explicit retry/delete buttons on error rows. Most structured and "app-like" feel.</p>
+    <div class="mockup-tags"><span class="mockup-tag">strong borders</span><span class="mockup-tag">header bar</span><span class="mockup-tag">sort control</span><span class="mockup-tag">timestamps</span></div>
+  </div>
+  <div class="frame dir-c">
+    <div class="app-header">
+      <div class="app-title">todos</div>
+      <button class="sort-btn">↕ Newest first</button>
+    </div>
+    <div class="input-area">
+      <input type="text" placeholder="What needs to be done?">
+      <button>Add Todo</button>
+    </div>
+    <div class="tabs">
+      <div class="tab active">Active</div>
+      <div class="tab">Completed</div>
+    </div>
+    <div class="todo-row" style="opacity: 0.5;">
+      <div class="checkbox"></div>
+      <div class="todo-text">Deploy to production</div>
+      <div class="status-dot syncing"></div>
+      <span class="todo-meta">just now</span>
+    </div>
+    <div class="todo-row">
+      <div class="checkbox"></div>
+      <div class="todo-text">Write unit tests for state machine</div>
+      <span class="todo-meta">2m ago</span>
+      <button class="action-btn">×</button>
+    </div>
+    <div class="todo-row">
+      <div class="checkbox"></div>
+      <div class="todo-text">Review PR feedback</div>
+      <span class="todo-meta">5m ago</span>
+      <button class="action-btn">×</button>
+    </div>
+    <div class="todo-row error-row">
+      <div class="checkbox"></div>
+      <div class="todo-text">Fix cursor pagination bug</div>
+      <div class="error-actions">
+        <button class="retry-btn">Retry</button>
+        <button class="delete-btn">Delete</button>
+      </div>
+    </div>
+    <div class="todo-row">
+      <div class="checkbox"></div>
+      <div class="todo-text">Set up Docker Compose stack</div>
+      <span class="todo-meta">1h ago</span>
+      <button class="action-btn">×</button>
+    </div>
+  </div>
+</section>
+
+<!-- DIRECTION D: Ultra Minimal -->
+<section id="sec-d" class="mockup-section">
+  <div class="mockup-header">
+    <h2>Direction D: Ultra Minimal</h2>
+    <p>Maximum whitespace. Underline-only input. Uppercase tab labels. Circular checkboxes with outline-only completed state. Error indicated by left border accent. Feels like a designer's personal tool.</p>
+    <div class="mockup-tags"><span class="mockup-tag">max whitespace</span><span class="mockup-tag">underline input</span><span class="mockup-tag">outline checks</span><span class="mockup-tag">left-border errors</span></div>
+  </div>
+  <div class="frame dir-d">
+    <div class="app-title">todos</div>
+    <div class="input-area">
+      <input type="text" placeholder="What needs to be done?">
+    </div>
+    <div class="tabs">
+      <div class="tab active">ACTIVE</div>
+      <div class="tab">COMPLETED</div>
+    </div>
+    <div class="todo-row" style="opacity: 0.5;">
+      <div class="checkbox"></div>
+      <div class="todo-text">Deploy to production</div>
+      <div class="status-dot syncing"></div>
+    </div>
+    <div class="todo-row">
+      <div class="checkbox"></div>
+      <div class="todo-text">Write unit tests for state machine</div>
+      <button class="action-btn">×</button>
+    </div>
+    <div class="todo-row">
+      <div class="checkbox"></div>
+      <div class="todo-text">Review PR feedback</div>
+      <button class="action-btn">×</button>
+    </div>
+    <div class="todo-row error-row">
+      <div class="checkbox"></div>
+      <div class="todo-text">Fix cursor pagination bug</div>
+      <div class="error-inline">
+        <span>Timed out</span>
+        <button class="action-btn" style="opacity:1;color:#737373;">↻</button>
+        <button class="action-btn" style="opacity:1;">×</button>
+      </div>
+    </div>
+    <div class="todo-row">
+      <div class="checkbox"></div>
+      <div class="todo-text">Set up Docker Compose stack</div>
+      <button class="action-btn">×</button>
+    </div>
+    <div class="todo-row">
+      <div class="checkbox checked"></div>
+      <div class="todo-text completed">Design data model schema</div>
+      <button class="action-btn">×</button>
+    </div>
+  </div>
+</section>
+
+<!-- DIRECTION E: Compact Dense -->
+<section id="sec-e" class="mockup-section">
+  <div class="mockup-header">
+    <h2>Direction E: Compact Dense</h2>
+    <p>Everything in a toolbar-style header: title, tabs, sort. Tight row spacing for maximum items visible. Small checkboxes, smaller font. Optimized for power users with long lists. IDE-inspired density.</p>
+    <div class="mockup-tags"><span class="mockup-tag">toolbar header</span><span class="mockup-tag">tight spacing</span><span class="mockup-tag">power user</span><span class="mockup-tag">max density</span></div>
+  </div>
+  <div class="frame dir-e">
+    <div class="app-bar">
+      <div class="app-title">todos</div>
+      <div class="tabs">
+        <div class="tab active">Active</div>
+        <div class="tab">Completed</div>
+      </div>
+      <button class="sort-toggle">↕ Newest</button>
+    </div>
+    <div class="input-area">
+      <input type="text" placeholder="Add a todo...">
+      <button>Add</button>
+    </div>
+    <div class="todo-row" style="opacity: 0.5;">
+      <div class="checkbox"></div>
+      <div class="todo-text">Deploy to production</div>
+      <div class="status-dot syncing"></div>
+    </div>
+    <div class="todo-row">
+      <div class="checkbox"></div>
+      <div class="todo-text">Write unit tests for state machine</div>
+      <button class="action-btn">×</button>
+    </div>
+    <div class="todo-row">
+      <div class="checkbox"></div>
+      <div class="todo-text">Review PR feedback</div>
+      <button class="action-btn">×</button>
+    </div>
+    <div class="todo-row error-row">
+      <div class="checkbox"></div>
+      <div class="todo-text" style="color: #ef4444;">Fix cursor pagination bug</div>
+      <button class="action-btn" style="opacity:1;color:#737373;">↻</button>
+      <button class="action-btn" style="opacity:1;color:#ef4444;">×</button>
+    </div>
+    <div class="todo-row">
+      <div class="checkbox"></div>
+      <div class="todo-text">Set up Docker Compose stack</div>
+      <button class="action-btn">×</button>
+    </div>
+    <div class="todo-row">
+      <div class="checkbox"></div>
+      <div class="todo-text">Implement optimistic mutations</div>
+      <button class="action-btn">×</button>
+    </div>
+    <div class="todo-row">
+      <div class="checkbox"></div>
+      <div class="todo-text">Add CORS configuration</div>
+      <button class="action-btn">×</button>
+    </div>
+    <div class="todo-row">
+      <div class="checkbox checked"></div>
+      <div class="todo-text completed">Design data model schema</div>
+      <button class="action-btn">×</button>
+    </div>
+  </div>
+</section>
+
+<!-- DIRECTION F: Soft Rounded -->
+<section id="sec-f" class="mockup-section">
+  <div class="mockup-header">
+    <h2>Direction F: Soft Rounded</h2>
+    <p>Generous border-radius on everything. Warm stone tones instead of pure gray. Thick borders. Rounded checkboxes with rounded corners. Friendly and approachable — feels like a modern iOS/Android app.</p>
+    <div class="mockup-tags"><span class="mockup-tag">rounded corners</span><span class="mockup-tag">warm tones</span><span class="mockup-tag">thick borders</span><span class="mockup-tag">friendly</span></div>
+  </div>
+  <div class="frame dir-f">
+    <div class="app-title">todos</div>
+    <div class="input-area">
+      <input type="text" placeholder="What needs to be done?">
+      <button>Add Todo</button>
+    </div>
+    <div class="tabs">
+      <div class="tab active">Active</div>
+      <div class="tab">Completed</div>
+    </div>
+    <div class="todo-row" style="opacity: 0.5;">
+      <div class="checkbox"></div>
+      <div class="todo-text">Deploy to production</div>
+      <div class="status-dot syncing"></div>
+    </div>
+    <div class="todo-row">
+      <div class="checkbox"></div>
+      <div class="todo-text">Write unit tests for state machine</div>
+      <button class="action-btn">×</button>
+    </div>
+    <div class="todo-row">
+      <div class="checkbox"></div>
+      <div class="todo-text">Review PR feedback</div>
+      <button class="action-btn">×</button>
+    </div>
+    <div class="todo-row error-row">
+      <div class="checkbox"></div>
+      <div class="todo-text">
+        Fix cursor pagination bug
+        <div class="error-msg">Network error — request timed out</div>
+      </div>
+      <button class="action-btn" style="color:#737373;">↻</button>
+      <button class="action-btn">×</button>
+    </div>
+    <div class="todo-row">
+      <div class="checkbox"></div>
+      <div class="todo-text">Set up Docker Compose stack</div>
+      <button class="action-btn">×</button>
+    </div>
+    <div class="todo-row">
+      <div class="checkbox checked"></div>
+      <div class="todo-text completed">Design data model schema</div>
+      <button class="action-btn">×</button>
+    </div>
+  </div>
+</section>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.mockup-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-pill').forEach(p => p.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('active');
+  event.target.classList.add('active');
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>
