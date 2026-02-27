@@ -14,6 +14,7 @@ classification:
   complexity: low
   projectContext: greenfield
 workflowType: 'prd'
+date: '2026-02-27'
 ---
 
 # Product Requirements Document - todo-app
@@ -129,26 +130,45 @@ Production-grade engineering applied to the simplest possible domain. The techni
 
 **Requirements revealed:** Cursor-based pagination (stable across mutations), server-side sorting by `createdAt`, sort order toggle (asc/desc), active/completed filtered views with independent pagination, performant list rendering at scale, optimistic deletion without pagination disruption.
 
+### Journey 4: Developer Handoff and Release Readiness
+
+**Persona:** Sam, a developer joining the project and validating it for release.
+
+**Opening Scene:** Sam clones the repository, reads the PRD and technical docs, and runs the documented setup flow. The app and supporting services become healthy quickly, with no hidden prerequisites.
+
+**Rising Action:** Sam navigates package boundaries (`shared`, `backend`, `frontend`), updates a small feature, and verifies type checks, linting, and tests. CI confirms the same checks in an automated pipeline.
+
+**Climax:** Sam runs the quality gates before release: unit coverage threshold, integration suite against a production-equivalent relational database, and end-to-end lifecycle tests. All pass with deterministic results.
+
+**Resolution:** The project is onboardable, maintainable, and release-ready. The artifact trail from requirements to implementation and verification is complete and auditable.
+
+**Requirements revealed:** Process completeness from planning through release, maintainable package boundaries, reproducible environment bootstrap, enforceable quality gates, unit coverage target, and full lifecycle E2E coverage.
+
 ### Journey Requirements Summary
 
-| Capability | J1 | J2 | J2b | J3 |
-|---|:---:|:---:|:---:|:---:|
-| Todo CRUD operations | ✓ | ✓ | ✓ | ✓ |
-| Optimistic UI (instant feedback) | ✓ | ✓ | ✓ | ✓ |
-| Active/Completed filtering | ✓ | | | ✓ |
-| Per-todo state machine | | ✓ | ✓ | |
-| Transient error → retry + delete | | ✓ | | |
-| Permanent error → message + delete (v1) | | | ✓ | |
-| Frontend validation (first line) | | | ✓ | |
-| Syncing state (disabled + dot) | ✓ | ✓ | ✓ | |
-| Idempotent retry (UUID upsert) | | ✓ | | |
-| No client persistence of failed mutations | | ✓ | ✓ | |
-| Cursor-based pagination | | | | ✓ |
-| Server-side sorting (createdAt) | | | | ✓ |
-| Sort order toggle | | | | ✓ |
-| Session persistence (server-confirmed only) | ✓ | ✓ | ✓ | |
-| Zero-onboarding UX | ✓ | | | |
-| Stable pagination across mutations | | | | ✓ |
+| Capability | J1 | J2 | J2b | J3 | J4 |
+|---|:---:|:---:|:---:|:---:|:---:|
+| Todo CRUD operations | ✓ | ✓ | ✓ | ✓ | |
+| Optimistic UI (instant feedback) | ✓ | ✓ | ✓ | ✓ | |
+| Active/Completed filtering | ✓ | | | ✓ | |
+| Per-todo state machine | | ✓ | ✓ | | |
+| Transient error → retry + delete | | ✓ | | | |
+| Permanent error → message + delete (v1) | | | ✓ | | |
+| Frontend validation (first line) | | | ✓ | | |
+| Syncing state (disabled + dot) | ✓ | ✓ | ✓ | | |
+| Idempotent retry (UUID upsert) | | ✓ | | | |
+| No client persistence of failed mutations | | ✓ | ✓ | | |
+| Cursor-based pagination | | | | ✓ | |
+| Server-side sorting (createdAt) | | | | ✓ | |
+| Sort order toggle | | | | ✓ | |
+| Session persistence (server-confirmed only) | ✓ | ✓ | ✓ | | |
+| Zero-onboarding UX | ✓ | | | | |
+| Stable pagination across mutations | | | | ✓ | |
+| Process completeness (artifact trail) | | | | | ✓ |
+| Maintainability and onboarding readiness | | | | | ✓ |
+| Deployable and reproducible setup | | | | | ✓ |
+| Unit coverage target enforcement | | | | | ✓ |
+| E2E lifecycle coverage enforcement | | | | | ✓ |
 
 ## Web App Specific Requirements
 
@@ -340,36 +360,36 @@ Measurable accessibility criteria are defined in Non-Functional Requirements. Ca
 | Lighthouse Performance score | ≥ 90 | Desktop and mobile |
 | Pagination fetch | < 300ms | Loading next page of todos |
 
-- The application must feel instant for all common interactions. Perceived latency is masked by optimistic updates — the user should never wait for the server on happy paths.
-- No layout shifts during todo creation, deletion, or pagination loading. Content placeholders prevent reflow.
+- At least 95% of create/complete/delete interactions must show visual state change within 50ms, measured in automated browser performance tests on representative baseline hardware.
+- Cumulative Layout Shift (CLS) during create/delete/pagination flows must remain <= 0.01, measured by automated performance audits on the production build.
 
 ### Security
 
-- All API inputs are sanitized and validated before processing — no raw user input reaches the database.
-- API enforces CORS policy allowing only the frontend origin.
-- Rate limiting on write endpoints (create, update, delete) to prevent abuse — specific limits deferred to architecture phase.
-- No sensitive data is stored (no auth, no PII beyond todo text). Todo text is stored as plain text — no encryption at rest required in v1.
-- Database connection uses parameterized queries only — no string concatenation in SQL.
+- 100% of API endpoints that accept user input must enforce schema validation and return `400` on invalid payloads, verified by integration tests.
+- CORS must allow only the configured frontend origin; preflight and simple requests from non-allowlisted origins must be rejected in 100% of CORS test cases.
+- Write endpoints must enforce rate limits of 60 requests/minute per IP (burst 20), returning `429` with `Retry-After` when exceeded, verified by load tests.
+- Persisted todo records must contain only `id`, `text`, `completed`, `createdAt`, and `updatedAt`; automated schema-conformance checks must fail on unauthorized fields.
+- Data-access logic must prevent injection vulnerabilities for user-provided values, with 0 successful injection attempts in automated security tests.
 
 ### Reliability
 
-- Server-confirmed data survives any client-side failure (browser crash, tab close, device switch).
-- API returns consistent error responses with appropriate HTTP status codes (4xx for client errors, 5xx for server errors) — no silent failures.
-- Database uses transactions for write operations to prevent partial state.
-- Postgres `updatedAt` trigger fires reliably on every row mutation.
-- Application recovers gracefully from database connection loss — API returns 5xx, frontend shows transient error state with retry option.
+- In E2E durability tests, 100% of server-confirmed todos must remain retrievable after forced refresh, browser restart, and new-session reopen.
+- 100% of non-2xx API responses must follow a consistent error schema (`code`, `message`, optional `details`) and use correct 4xx/5xx status classes, verified by contract tests.
+- All multi-step write operations must be atomic; fault-injection tests must show 0 partial writes across 100 failure runs.
+- Todo `updatedAt` must change on every successful update in 100% of integration test cases.
+- On database outage, write requests must fail with `503` within 5s and the UI must expose a retry affordance within 1s after the failed response.
 
 ### Maintainability & Testability
 
 - **Unit test coverage:** ≥ 90% across backend and frontend logic
-- **E2E tests:** Complete todo lifecycle (create → complete → uncomplete → delete) with assertions on UI state at each step
-- **Integration tests:** API endpoints tested against real Postgres instance (not mocked) with seed data
-- **State machine tests:** Every valid transition and every invalid transition rejection covered
-- **Validation tests:** Each validation layer (frontend, API, DB) tested independently
-- **Code structure:** Monorepo with clear package boundaries — `shared`, `backend`, `frontend` packages with no circular dependencies
-- **Type safety:** Shared TypeScript interfaces are the single source of truth for data shapes across packages
-- **Linting and formatting:** Consistent code style enforced via tooling (specific tools deferred to architecture)
-- **Dev environment:** Single `docker compose up` command starts the full stack (frontend, backend, Postgres) with no manual setup
+- **E2E tests:** Complete lifecycle suite (create → complete → uncomplete → delete) must pass in automated verification before merge and release.
+- **Integration tests:** 100% of public API endpoints must have integration coverage against a production-equivalent relational database instance (no endpoint left untested).
+- **State machine tests:** 100% of allowed transitions and 100% of disallowed transitions must be asserted.
+- **Validation tests:** Each validation rule must include at least 1 valid case and at least 1 invalid case at frontend, API, and DB layers.
+- **Code structure:** Dependency analysis must report 0 circular dependencies across `shared`, `backend`, and `frontend`.
+- **Type safety:** Static type checks must pass in all packages with strict mode enabled.
+- **Linting and formatting:** Lint and formatting checks must pass with 0 errors in automated verification.
+- **Dev environment:** From a clean checkout, one documented setup command must bring all required services to healthy state within 120s without manual steps.
 
 ### Accessibility
 
