@@ -27,24 +27,20 @@ describe("constants", () => {
   });
 
   describe("errorCodes", () => {
-    it("has VALIDATION_ERROR", () => {
-      expect(errorCodes.VALIDATION_ERROR).toBeDefined();
-      expect(typeof errorCodes.VALIDATION_ERROR).toBe("string");
+    it("VALIDATION_ERROR equals 'VALIDATION_ERROR'", () => {
+      expect(errorCodes.VALIDATION_ERROR).toBe("VALIDATION_ERROR");
     });
 
-    it("has NOT_FOUND", () => {
-      expect(errorCodes.NOT_FOUND).toBeDefined();
-      expect(typeof errorCodes.NOT_FOUND).toBe("string");
+    it("NOT_FOUND equals 'NOT_FOUND'", () => {
+      expect(errorCodes.NOT_FOUND).toBe("NOT_FOUND");
     });
 
-    it("has RATE_LIMITED", () => {
-      expect(errorCodes.RATE_LIMITED).toBeDefined();
-      expect(typeof errorCodes.RATE_LIMITED).toBe("string");
+    it("RATE_LIMITED equals 'RATE_LIMITED'", () => {
+      expect(errorCodes.RATE_LIMITED).toBe("RATE_LIMITED");
     });
 
-    it("has INTERNAL_ERROR", () => {
-      expect(errorCodes.INTERNAL_ERROR).toBeDefined();
-      expect(typeof errorCodes.INTERNAL_ERROR).toBe("string");
+    it("INTERNAL_ERROR equals 'INTERNAL_ERROR'", () => {
+      expect(errorCodes.INTERNAL_ERROR).toBe("INTERNAL_ERROR");
     });
 
     it("has exactly 4 keys", () => {

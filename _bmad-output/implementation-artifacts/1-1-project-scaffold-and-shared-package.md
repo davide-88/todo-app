@@ -1,6 +1,6 @@
 # Story 1.1: Project Scaffold & Shared Package
 
-Status: review
+Status: done
 
 ## Story
 
@@ -430,3 +430,4 @@ claude-4.6-sonnet-medium-thinking
 ### Change Log
 
 - 2026-03-01: Initial implementation of Story 1.1 — full monorepo scaffold, shared package with schemas/constants/state machine, backend and frontend stubs. All tests green, typecheck and lint passing.
+- 2026-03-01: Code review fixes — H1: errorCodes test now asserts actual string values; H2: added @vitest/coverage-v8, test:coverage script with enforced 100% branch/function thresholds (index.ts barrel excluded), root test script uses coverage run; M1: removed spurious pageSize re-export from todo-schemas.ts; M2: ESLint upgraded to recommendedTypeChecked with parserOptions.project for type-aware rules; M3: added Todo schema empty-text rejection test; M4: added start_period: 10s to docker-compose healthcheck. 58 tests green, 100% coverage (src excl. barrel), typecheck and lint clean.

@@ -47,6 +47,18 @@ describe("Todo schema", () => {
     ).toBe(false);
   });
 
+  it("rejects empty text", () => {
+    expect(
+      Value.Check(Todo, {
+        id: validUuid,
+        text: "",
+        completed: false,
+        createdAt: validDate,
+        updatedAt: validDate,
+      }),
+    ).toBe(false);
+  });
+
   it("rejects text over maxTextLength", () => {
     expect(
       Value.Check(Todo, {

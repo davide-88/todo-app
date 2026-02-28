@@ -1,5 +1,5 @@
 import Type from "typebox";
-import { maxTextLength, pageSize } from "./constants.js";
+import { maxTextLength } from "./constants.js";
 
 export const Todo = Type.Object({
   id: Type.String({ format: "uuid" }),
@@ -41,5 +41,3 @@ export const TodoListResponse = Type.Object({
   cursor: Type.Union([Type.String(), Type.Null()]),
 });
 export type TodoListResponse = Type.Static<typeof TodoListResponse>;
-
-export { pageSize };
