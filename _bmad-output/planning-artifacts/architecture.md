@@ -324,7 +324,7 @@ frontend        backend (Drizzle schema conforms to shared types via satisfies)
 |---|---|---|
 | Endpoints | plural nouns | `/api/todos` |
 | Route params | camelCase | `:id` |
-| Query params | camelCase | `?status=active&sortOrder=desc` |
+| Query params | camelCase | `?status=active&order=desc` |
 | JSON fields | camelCase | `{ createdAt, updatedAt }` |
 | Error codes | UPPER_SNAKE_CASE | `VALIDATION_ERROR`, `NOT_FOUND`, `RATE_LIMITED` |
 

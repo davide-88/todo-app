@@ -794,7 +794,7 @@ So that I can manage todos on any device without loss of functionality.
 **When** color contrast is measured
 **Then** primary text (#0A0A0A on #FFFFFF) meets AAA (19.4:1)
 **And** completed/secondary text (#737373 on #FFFFFF) meets AA (4.56:1)
-**And** error text (#EF4444 on #FFFFFF) meets AA (4.53:1)
+**And** error text (#DC2626 on #FFFFFF) meets AA (5.58:1)
 **And** interactive components meet ≥ 3:1 contrast ratio
 
 ## Epic 5: Quality Assurance & CI/CD

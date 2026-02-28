@@ -300,7 +300,7 @@ All core interactions use universal conventions:
 | Primary | `--primary` | #171717 | "Add Todo" button, active tab indicator |
 | Syncing | `--syncing` | #3B82F6 | Status dot during sync |
 | Success | `--success` | #22C55E | Brief confirmation (optional) |
-| Error | `--destructive` | #EF4444 | Error accent, destructive actions |
+| Error | `--destructive` | #DC2626 | Error accent, destructive actions |
 | Error background | `--destructive/10` | #FEF2F2 | Error row background tint |
 
 ### Typography System
@@ -355,8 +355,8 @@ font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif
 - **Contrast ratios (WCAG AA):**
   - Primary text (#0A0A0A) on white: 19.4:1 — passes AAA
   - Completed/secondary text (#737373) on white: 4.56:1 — passes AA
-  - Error text (#EF4444) on white: 4.53:1 — passes AA
-  - Error text on error background (#FEF2F2): 4.32:1 — passes AA for large text, borderline for normal
+  - Error text (#DC2626) on white: 5.58:1 — passes AA
+  - Error text on error background (#FEF2F2): 5.14:1 — passes AA
 - **Focus indicators:** 2px solid `--primary` with 2px offset on all interactive elements
 - **Touch targets:** 44x44px minimum enforced through row height (48px) and button sizing
 - **Font sizing:** Base 16px ensures readability; no text smaller than 13px
@@ -697,7 +697,7 @@ OR (empty state):
 | Variant | Color | Animation | Usage |
 |---|---|---|---|
 | `syncing` | `--syncing` (#3B82F6) | Pulse (opacity 1 → 0.4 → 1, 1.5s) | Request in flight |
-| `error` | `--destructive` (#EF4444) | None (static) | Request failed |
+| `error` | `--destructive` (#DC2626) | None (static) | Request failed |
 | `hidden` | n/a | n/a | Confirmed state — dot not rendered |
 
 **Accessibility:**
@@ -1031,8 +1031,8 @@ App
 |---|---|---|---|---|
 | Primary text | #0A0A0A | #FFFFFF | 19.4:1 | AAA |
 | Completed text | #737373 | #FFFFFF | 4.56:1 | AA |
-| Error text | #EF4444 | #FFFFFF | 4.53:1 | AA |
-| Error text on error bg | #EF4444 | #FEF2F2 | 4.32:1 | AA (large) |
+| Error text | #DC2626 | #FFFFFF | 5.58:1 | AA |
+| Error text on error bg | #DC2626 | #FEF2F2 | 5.14:1 | AA |
 | Placeholder text | #737373 | #FAFAFA | 4.17:1 | AA (large) |
 
 **Note:** Placeholder text contrast (#737373 on #FAFAFA = 4.17:1) is borderline for AA normal text. Accept for placeholder since it's non-essential content and meets AA large text criteria. Actual input text uses #0A0A0A.
