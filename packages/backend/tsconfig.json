@@ -9,5 +9,8 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "drizzle.config.ts"]
+  "include": ["src", "drizzle.config.ts"],
+  "references": [
+    { "path": "../shared" }
+  ]
 }

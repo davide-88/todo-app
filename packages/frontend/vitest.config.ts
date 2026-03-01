@@ -12,5 +12,6 @@ export default defineConfig({
   test: {
     globals: false,
     environment: "jsdom",
+    passWithNoTests: true,
   },
 });

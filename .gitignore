@@ -6,3 +6,4 @@ coverage
 *.local
 .DS_Store
 .pnpm-store
+**/*/tsconfig.tsbuildinfo
