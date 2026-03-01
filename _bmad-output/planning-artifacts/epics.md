@@ -310,8 +310,12 @@ So that my data persists across browser sessions and devices.
 **Then** a 400 response is returned with { code: "VALIDATION_ERROR", message: "...", details: [...] }
 
 **Given** a non-existent todo id
-**When** I send PATCH or DELETE to /api/todos/:id
+**When** I send PATCH /api/todos/:id
 **Then** a 404 response is returned with { code: "NOT_FOUND", message: "..." }
+
+**Given** a non-existent todo id
+**When** I send DELETE /api/todos/:id
+**Then** 204 No Content is returned (delete is idempotent — no error if already gone)
 
 **Given** any non-2xx response
 **When** the error handler processes it
@@ -334,6 +338,14 @@ So that my data persists across browser sessions and devices.
 **When** the todos table is created
 **Then** it includes the updatedAt trigger via raw SQL
 **And** the table schema conforms to shared TypeBox types via satisfies
+
+**Given** unit tests run via `pnpm --filter @todo-app/backend test`
+**When** all route and error handler tests execute with mocked DB
+**Then** all tests pass without requiring a Postgres connection
+
+**Given** integration tests run via `pnpm --filter @todo-app/backend integration-test`
+**When** the script starts Postgres via Docker Compose and executes integration tests
+**Then** all CRUD endpoints and health check are verified against a real Postgres instance
 
 ### Story 1.3: Frontend Shell & Todo List Display
 

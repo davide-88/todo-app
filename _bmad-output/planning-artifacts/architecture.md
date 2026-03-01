@@ -428,10 +428,12 @@ packages/backend/src/
   schema/
     todos-table.ts
   lib/
+    todo-repository.ts          # TodoRepository interface (LSP)
+    drizzle-todo-repository.ts  # Drizzle ORM implementation
     error-handler.ts
 ```
 
-One route file per resource. Fastify plugins for cross-cutting middleware.
+One route file per resource. Fastify plugins for cross-cutting middleware. Routes depend on `TodoRepository` interface, not Drizzle directly — the ORM can be swapped without touching routes or unit tests.
 
 ### Format Patterns
 
@@ -594,6 +596,8 @@ todo-app/
 │   │       │   ├── todos-table.ts          # Drizzle pgTable definition (satisfies shared types)
 │   │       │   └── migrations/             # Drizzle Kit generated SQL migrations
 │   │       └── lib/
+│   │           ├── todo-repository.ts     # TodoRepository interface (LSP — swap ORM without touching routes)
+│   │           ├── drizzle-todo-repository.ts # Drizzle implementation of TodoRepository
 │   │           ├── error-handler.ts        # Global Fastify error handler → { code, message, details? }
 │   │           └── error-handler.test.ts
 │   └── frontend/
@@ -683,7 +687,7 @@ The API is the only integration point between frontend and backend. No shared ru
 
 **Data boundary:**
 
-All data access goes through Drizzle ORM in `packages/backend/src/schema/` and route handlers. No direct SQL. No DB access from frontend.
+All data access goes through the `TodoRepository` interface in `packages/backend/src/lib/todo-repository.ts`. Route handlers depend on this interface — never on Drizzle or SQL directly. The Drizzle implementation (`drizzle-todo-repository.ts`) is injected via the DB plugin. No DB access from frontend.
 
 ### Requirements to Structure Mapping
 
