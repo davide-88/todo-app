@@ -24,6 +24,11 @@ export const UpdateTodo = Type.Object(
 );
 export type UpdateTodo = Type.Static<typeof UpdateTodo>;
 
+export const TodoParams = Type.Object({
+  id: Type.String({ format: "uuid" }),
+});
+export type TodoParams = Type.Static<typeof TodoParams>;
+
 export const TodoListQuery = Type.Object({
   status: Type.Optional(
     Type.Union([Type.Literal("active"), Type.Literal("completed")]),

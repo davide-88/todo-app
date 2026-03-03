@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:integration": "docker-compose -f ../../docker-compose.yml up -d --wait postgres && DOTENV_CONFIG_PATH=.env.test vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.1",
@@ -17,13 +18,18 @@
     "@fastify/rate-limit": "^10.2.0",
     "@fastify/swagger": "^9.3.0",
     "@fastify/swagger-ui": "^5.2.1",
+    "@fastify/type-provider-typebox": "^6.1.0",
     "@todo-app/shared": "workspace:*",
     "drizzle-orm": "^0.38.4",
+    "env-schema": "^7.0.0",
     "fastify": "^5.2.1",
+    "fastify-plugin": "^5.1.0",
+    "http-errors": "^2.0.1",
     "pg": "^8.13.3",
     "typebox": "^1.1.5"
   },
   "devDependencies": {
+    "@types/http-errors": "^2.0.5",
     "@types/pg": "^8.11.11",
     "drizzle-kit": "^0.30.4",
     "tsx": "^4.19.2",

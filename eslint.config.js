@@ -39,6 +39,12 @@ export default tseslint.config(
     },
   },
   {
+    files: ["**/*.test.ts", "**/*.test.tsx"],
+    rules: {
+      "@typescript-eslint/unbound-method": "off",
+    },
+  },
+  {
     ignores: [
       "**/node_modules/**",
       "**/dist/**",
@@ -46,6 +52,7 @@ export default tseslint.config(
       "packages/frontend/src/components/ui/**",
       "**/vite.config.ts",
       "**/vitest.config.ts",
+      "**/vitest.integration.config.ts",
       "**/drizzle.config.ts",
     ],
   },

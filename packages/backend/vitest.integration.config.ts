@@ -10,7 +10,10 @@ export default defineConfig({
   test: {
     globals: false,
     environment: "node",
-    passWithNoTests: true,
-    exclude: ["integration-tests/**", "**/node_modules/**", "dist/**"],
+    globalSetup: ["integration-tests/setup/global-setup.ts"],
+    setupFiles: ["integration-tests/setup/vitest-setup.ts"],
+    include: ["integration-tests/**/*.integration.test.ts"],
+    testTimeout: 30000,
+    hookTimeout: 30000,
   },
 });
