@@ -10,10 +10,13 @@
     "lint": "eslint packages --max-warnings 0",
     "format": "prettier --write packages",
     "test": "pnpm --filter @todo-app/shared test:coverage && pnpm --filter !@todo-app/shared -r test",
+    "test:integration": "pnpm --filter @todo-app/backend test:integration",
     "test:e2e": "echo 'e2e tests not yet configured'"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild"]
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   },
   "devDependencies": {
     "@eslint/js": "^9.20.0",
