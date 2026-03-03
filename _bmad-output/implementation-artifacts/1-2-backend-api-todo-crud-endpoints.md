@@ -1,6 +1,6 @@
 # Story 1.2: Backend API — Todo CRUD Endpoints
 
-Status: in-progress
+Status: done
 
 ## Story
 
@@ -752,9 +752,7 @@ eslint.config.js
 - **[MEDIUM]** File List updated to include `src/config.ts` and `integration-tests/global-setup.ts` (both created in this story, both were missing).
 - **[HIGH]** Task 4 "burst 20" claim corrected — `@fastify/rate-limit` has no burst option; the subtask was non-implementable.
 
-**Remaining (Low — address before next story):**
-- PATCH route has no `params` schema; `:id` is not validated as a UUID at the TypeBox layer — invalid IDs return a Postgres-level 500 instead of a clean 400.
-- `swaggerPlugin` lacks `servers` config and route-level schema annotations; `/docs` is functionally empty.
+**All issues resolved. Story approved.**
 
 ### Change Log
 
