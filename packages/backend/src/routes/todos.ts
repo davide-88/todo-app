@@ -1,11 +1,26 @@
 import type { FastifyPluginCallbackTypebox } from "@fastify/type-provider-typebox";
-import { CreateTodo, TodoListQuery, TodoParams, UpdateTodo, pageSize } from "@todo-app/shared";
+import {
+  ApiError,
+  CreateTodo,
+  Todo,
+  TodoListQuery,
+  TodoListResponse,
+  TodoParams,
+  UpdateTodo,
+  pageSize,
+} from "@todo-app/shared";
 import createError from "http-errors";
 
 export const todosRoutes: FastifyPluginCallbackTypebox = (app, _opts, done) => {
   app.post(
     "/",
-    { schema: { body: CreateTodo } },
+    {
+      schema: {
+        tags: ["todos"],
+        body: CreateTodo,
+        response: { 201: Todo, 400: ApiError },
+      },
+    },
     async (request, reply) => {
       const { id, text } = request.body;
       const todo = await app.db.create({ id, text });
@@ -15,7 +30,13 @@ export const todosRoutes: FastifyPluginCallbackTypebox = (app, _opts, done) => {
 
   app.get(
     "/",
-    { schema: { querystring: TodoListQuery } },
+    {
+      schema: {
+        tags: ["todos"],
+        querystring: TodoListQuery,
+        response: { 200: TodoListResponse, 400: ApiError },
+      },
+    },
     async (request, reply) => {
       const query = request.query;
 
@@ -46,7 +67,14 @@ export const todosRoutes: FastifyPluginCallbackTypebox = (app, _opts, done) => {
 
   app.patch(
     "/:id",
-    { schema: { params: TodoParams, body: UpdateTodo } },
+    {
+      schema: {
+        tags: ["todos"],
+        params: TodoParams,
+        body: UpdateTodo,
+        response: { 200: Todo, 400: ApiError, 404: ApiError },
+      },
+    },
     async (request, reply) => {
       const { id } = request.params;
       const data = request.body;
@@ -60,7 +88,12 @@ export const todosRoutes: FastifyPluginCallbackTypebox = (app, _opts, done) => {
 
   app.delete(
     "/:id",
-    { schema: { params: TodoParams } },
+    {
+      schema: {
+        tags: ["todos"],
+        params: TodoParams,
+      },
+    },
     async (request, reply) => {
       const { id } = request.params;
       await app.db.delete(id);
