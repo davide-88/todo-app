@@ -1,0 +1,9 @@
+node_modules
+dist
+.env
+coverage
+.turbo
+*.local
+.DS_Store
+.pnpm-store
+**/*/tsconfig.tsbuildinfo

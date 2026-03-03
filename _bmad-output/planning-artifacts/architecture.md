@@ -162,7 +162,7 @@ mkdir -p packages/shared && cd packages/shared && pnpm init
 
 **Critical Decisions (Block Implementation):**
 - ORM: Drizzle ORM — schema definition, migrations, query layer
-- Validation: TypeBox — shared schemas for Fastify routes + TypeScript types
+- Validation: TypeBox v1 (`typebox ^1.1.5`) — shared schemas for Fastify routes + TypeScript types
 - State management: TanStack Query + React local state
 - Error response contract: `{code, message, details?}` across all endpoints
 
@@ -237,7 +237,7 @@ frontend        backend (Drizzle schema conforms to shared types via satisfies)
 | CORS | `@fastify/cors` | Allowlist frontend origin only. Rejects preflight and simple requests from non-allowlisted origins. |
 | Rate limiting | `@fastify/rate-limit` | In-memory store, 60 req/min per IP, burst 20. Sufficient for single-instance. Returns `429` with `Retry-After` header. |
 | Security headers | `@fastify/helmet` | Standard security headers (X-Content-Type-Options, X-Frame-Options, etc.) with sensible defaults. |
-| Input validation | TypeBox schemas on all routes | Fastify v5 enforces JSON Schema validation on `body`, `querystring`, `params`. TypeBox generates these schemas with TypeScript type inference. |
+| Input validation | TypeBox v1 schemas on all routes | Fastify v5 enforces JSON Schema validation on `body`, `querystring`, `params`. TypeBox v1 (`typebox ^1.1.5`) generates these schemas with TypeScript type inference. Uses default import: `import Type from 'typebox'`. |
 
 ### API & Communication Patterns
 
@@ -245,7 +245,7 @@ frontend        backend (Drizzle schema conforms to shared types via satisfies)
 |---|---|---|
 | API style | REST | Decided in brainstorming. Single resource (`/api/todos`), CRUD operations, query params for filter/sort/pagination. |
 | Base path | `/api` | All endpoints prefixed. Separates API from potential static file serving. |
-| Documentation | `@fastify/swagger` + `@fastify/swagger-ui` | Auto-generates OpenAPI spec from TypeBox route schemas. Zero additional authoring — documentation is a byproduct of validation schemas. |
+| Documentation | `@fastify/swagger` + `@fastify/swagger-ui` | Auto-generates OpenAPI spec from TypeBox v1 (`typebox`) route schemas. Zero additional authoring — documentation is a byproduct of validation schemas. |
 | Versioning | None (v1) | Single consumer (our frontend). No version prefix needed. |
 | Error schema | `{ code: string, message: string, details?: unknown }` | Consistent across all 4xx/5xx responses. `code` is machine-readable (e.g., `VALIDATION_ERROR`, `NOT_FOUND`). `message` is human-readable. `details` carries field-level validation errors when applicable. |
 | Health check | `GET /api/health` | Returns `{ status: "ok" }` or `{ status: "error", message: "..." }` with DB connectivity check. Used by Docker healthcheck. |
@@ -283,7 +283,7 @@ frontend        backend (Drizzle schema conforms to shared types via satisfies)
 
 | Decision | Choice | Rationale |
 |---|---|---|
-| Deployment target | Docker Compose (v1) | Local dev and demo. Multi-container: frontend (nginx or Vite preview), backend (Node), Postgres. Container-ready for Railway/Fly.io future migration. |
+| Deployment target | Docker Compose (v1) | Local dev and demo. Multi-container: frontend (nginx or Vite preview), backend (Node), Postgres 18 (`postgres:18-alpine`). Container-ready for Railway/Fly.io future migration. |
 | CI/CD | GitHub Actions | Lint → type-check → unit tests → integration tests (Postgres service container) → E2E (Playwright). Runs on push/PR. |
 | Environment variables | `dotenv` (local dev), `process.env` (runtime) | Backend env: `DATABASE_URL`, `PORT`, `CORS_ORIGIN`, `RATE_LIMIT_MAX`. Frontend env: `VITE_API_BASE_URL` (Vite requires `VITE_` prefix for client-exposed vars, consumed via `import.meta.env`). Shared constants (not env-dependent) in `shared` package. |
 | Logging | Pino (Fastify built-in) | Structured JSON logging. No additional setup — Fastify ships with Pino. Log level configurable via env. |
@@ -428,10 +428,12 @@ packages/backend/src/
   schema/
     todos-table.ts
   lib/
+    todo-repository.ts          # TodoRepository interface (LSP)
+    drizzle-todo-repository.ts  # Drizzle ORM implementation
     error-handler.ts
 ```
 
-One route file per resource. Fastify plugins for cross-cutting middleware.
+One route file per resource. Fastify plugins for cross-cutting middleware. Routes depend on `TodoRepository` interface, not Drizzle directly — the ORM can be swapped without touching routes or unit tests.
 
 ### Format Patterns
 
@@ -594,6 +596,8 @@ todo-app/
 │   │       │   ├── todos-table.ts          # Drizzle pgTable definition (satisfies shared types)
 │   │       │   └── migrations/             # Drizzle Kit generated SQL migrations
 │   │       └── lib/
+│   │           ├── todo-repository.ts     # TodoRepository interface (LSP — swap ORM without touching routes)
+│   │           ├── drizzle-todo-repository.ts # Drizzle implementation of TodoRepository
 │   │           ├── error-handler.ts        # Global Fastify error handler → { code, message, details? }
 │   │           └── error-handler.test.ts
 │   └── frontend/
@@ -665,7 +669,7 @@ todo-app/
 @todo-app/shared ← @todo-app/frontend
 ```
 
-No other cross-package dependencies. `shared` depends on `@sinclair/typebox` only. Backend and frontend never import from each other.
+No other cross-package dependencies. `shared` depends on `typebox ^1.1.5` only. Backend and frontend never import from each other.
 
 **API boundary:**
 
@@ -683,7 +687,7 @@ The API is the only integration point between frontend and backend. No shared ru
 
 **Data boundary:**
 
-All data access goes through Drizzle ORM in `packages/backend/src/schema/` and route handlers. No direct SQL. No DB access from frontend.
+All data access goes through the `TodoRepository` interface in `packages/backend/src/lib/todo-repository.ts`. Route handlers depend on this interface — never on Drizzle or SQL directly. The Drizzle implementation (`drizzle-todo-repository.ts`) is injected via the DB plugin. No DB access from frontend.
 
 ### Requirements to Structure Mapping
 
@@ -750,7 +754,7 @@ pnpm test:e2e                           # Playwright (full stack)
 - React 19 + Vite (standard combo, first-class support)
 - Fastify v5 + Node 24 LTS (tested in CI since Fastify v5.4.0)
 - Drizzle ORM + `pg` driver + Postgres (native adapter)
-- TypeBox + Fastify v5 (Fastify consumes JSON Schema natively)
+- TypeBox v1 (`typebox ^1.1.5`) + Fastify v5 (Fastify consumes JSON Schema natively)
 - TanStack Query v5 + React 19 (first-class `@tanstack/react-query`)
 - shadcn/ui + Radix UI + Tailwind CSS + React (canonical variant)
 - Vitest v4 + Vite (Vite-native test runner)
