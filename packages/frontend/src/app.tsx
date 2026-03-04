@@ -27,9 +27,19 @@ export function App() {
         />
         <InputArea onSubmit={handleSubmit} />
         <Tabs defaultValue="active">
-          <TabsList className="w-full grid grid-cols-2 rounded-none">
-            <TabsTrigger value="active">Active</TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
+          <TabsList className="w-full grid grid-cols-2 rounded-none bg-transparent p-0 h-auto">
+            <TabsTrigger
+              value="active"
+              className="rounded-none py-3 border-b-2 data-[state=active]:bg-muted/50 data-[state=active]:shadow-none data-[state=active]:border-foreground data-[state=inactive]:border-border font-medium"
+            >
+              Active
+            </TabsTrigger>
+            <TabsTrigger
+              value="completed"
+              className="rounded-none py-3 border-b-2 data-[state=active]:bg-muted/50 data-[state=active]:shadow-none data-[state=active]:border-foreground data-[state=inactive]:border-border font-medium"
+            >
+              Completed
+            </TabsTrigger>
           </TabsList>
         </Tabs>
         <TodoList

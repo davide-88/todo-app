@@ -17,7 +17,7 @@ export const InputArea = ({ onSubmit }: InputAreaProps) => {
   };
 
   return (
-    <div className="flex items-center gap-2 px-4 py-3 bg-[hsl(var(--card))] border-b border-border">
+    <div className="flex items-center gap-2 px-4 py-3 bg-card border-b border-border">
       <Input
         value={value}
         onChange={(e) => setValue(e.target.value)}
@@ -26,7 +26,7 @@ export const InputArea = ({ onSubmit }: InputAreaProps) => {
         }}
         placeholder="What needs to be done?"
         aria-label="New todo text"
-        className="flex-1 border-input focus:border-primary"
+        className="flex-1 border-input focus:border-primary bg-muted/50"
       />
       <Button onClick={handleSubmit}>Add Todo</Button>
     </div>
