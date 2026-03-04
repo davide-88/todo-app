@@ -45,7 +45,7 @@ development_status:
   1-1-project-scaffold-and-shared-package: done
   1-2-backend-api-todo-crud-endpoints: done
   1-3-frontend-shell-and-todo-list-display: done
-  1-4-todo-creation-with-optimistic-ui: backlog
+  1-4-todo-creation-with-optimistic-ui: done
   1-5-todo-completion-and-deletion-with-optimistic-ui: backlog
   epic-1-retrospective: optional
 

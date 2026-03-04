@@ -93,6 +93,43 @@ describe("apiFetch", () => {
     );
   });
 
+  it("captures HTTP status in error on 400", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      statusText: "Bad Request",
+      json: () => Promise.resolve({ code: "VALIDATION_ERROR", message: "Invalid input" }),
+    });
+
+    await expect(apiFetch("/api/todos")).rejects.toMatchObject({
+      code: "VALIDATION_ERROR",
+      status: 400,
+    });
+  });
+
+  it("captures HTTP status in error on 500", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      statusText: "Internal Server Error",
+      json: () => Promise.resolve({}),
+    });
+
+    await expect(apiFetch("/api/todos")).rejects.toMatchObject({
+      code: "UNKNOWN_ERROR",
+      status: 500,
+    });
+  });
+
+  it("uses status=0 for network errors", async () => {
+    mockFetch.mockRejectedValueOnce(new Error("Failed to fetch"));
+
+    await expect(apiFetch("/api/todos")).rejects.toMatchObject({
+      code: "NETWORK_ERROR",
+      status: 0,
+    });
+  });
+
   it("preserves Content-Type when custom headers are provided", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,

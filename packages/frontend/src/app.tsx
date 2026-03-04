@@ -4,6 +4,8 @@ import { AppHeader } from "./components/app-header.js";
 import { InputArea } from "./components/input-area.js";
 import { TodoList } from "./components/todo-list.js";
 import { useTodos } from "./hooks/use-todos.js";
+import { useCreateTodo } from "./hooks/use-create-todo.js";
+import { useTodoStates } from "./hooks/use-todo-states.js";
 
 export function App() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -12,11 +14,16 @@ export function App() {
     order: sortOrder,
   });
 
+  const { getTodoState, getErrorMessage, setTodoState, clearTodoState } = useTodoStates();
+  const createMutation = useCreateTodo({ setTodoState, clearTodoState });
+
   // Story 1.5: toggle/delete mutations (no-ops until implemented)
   const handleToggle: (id: string) => void = () => undefined;
   const handleDelete: (id: string) => void = () => undefined;
-  // Story 1.4: create mutation (no-op until implemented)
-  const handleSubmit: (text: string) => void = () => undefined;
+
+  const handleSubmit = (text: string) => {
+    createMutation.mutate({ id: crypto.randomUUID(), text });
+  };
 
   return (
     <main className="min-h-screen bg-background px-4 py-8 md:px-0">
@@ -50,6 +57,8 @@ export function App() {
           fetchNextPage={fetchNextPage}
           onToggle={handleToggle}
           onDelete={handleDelete}
+          getTodoState={getTodoState}
+          getErrorMessage={getErrorMessage}
         />
       </div>
     </main>
