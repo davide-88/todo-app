@@ -13,5 +13,6 @@ export default defineConfig({
     globals: false,
     environment: "jsdom",
     passWithNoTests: true,
+    setupFiles: ["./src/test-setup.ts"],
   },
 });

@@ -1,0 +1,42 @@
+import type { ApiError } from "@todo-app/shared";
+
+const BASE_URL: string = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000";
+
+type ErrorBody = { code?: string; message?: string; details?: unknown };
+
+export class ApiFetchError extends Error implements ApiError {
+  code: string;
+  details?: unknown;
+
+  constructor(code: string, message: string, details?: unknown) {
+    super(message);
+    this.code = code;
+    this.details = details;
+  }
+}
+
+export async function apiFetch<T>(
+  path: string,
+  options?: RequestInit,
+): Promise<T> {
+  const url = `${BASE_URL}${path}`;
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers: { "Content-Type": "application/json", ...options?.headers },
+    });
+  } catch {
+    throw new ApiFetchError("NETWORK_ERROR", "Network request failed");
+  }
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({})) as ErrorBody;
+    throw new ApiFetchError(
+      body.code ?? "UNKNOWN_ERROR",
+      body.message ?? response.statusText,
+      body.details,
+    );
+  }
+  if (response.status === 204) return undefined as T;
+  return response.json() as Promise<T>;
+}
