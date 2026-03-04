@@ -126,4 +126,62 @@ describe("TodoList", () => {
     fireEvent.click(screen.getByRole("button", { name: /load more/i }));
     expect(fetchNextPage).toHaveBeenCalledTimes(1);
   });
+
+  it("passes syncing state to TodoRow via getTodoState", () => {
+    const todos = [makeTodo("1", "Test todo")];
+    const getTodoState = vi.fn().mockReturnValue("syncing");
+    render(
+      <TodoList
+        todos={todos}
+        isLoading={false}
+        hasNextPage={false}
+        isFetchingNextPage={false}
+        onToggle={vi.fn()}
+        onDelete={vi.fn()}
+        fetchNextPage={vi.fn()}
+        getTodoState={getTodoState}
+      />,
+    );
+    expect(getTodoState).toHaveBeenCalledWith("1");
+    const row = screen.getByRole("listitem");
+    expect(row).toHaveAttribute("aria-disabled", "true");
+  });
+
+  it("defaults to confirmed state when getTodoState not provided", () => {
+    const todos = [makeTodo("1", "Test todo")];
+    render(
+      <TodoList
+        todos={todos}
+        isLoading={false}
+        hasNextPage={false}
+        isFetchingNextPage={false}
+        onToggle={vi.fn()}
+        onDelete={vi.fn()}
+        fetchNextPage={vi.fn()}
+      />,
+    );
+    const row = screen.getByRole("listitem");
+    expect(row).not.toHaveAttribute("aria-disabled");
+  });
+
+  it("passes errorMessage to TodoRow via getErrorMessage", () => {
+    const todos = [makeTodo("1", "Test todo")];
+    const getTodoState = vi.fn().mockReturnValue("permanent-error");
+    const getErrorMessage = vi.fn().mockReturnValue("Something went wrong");
+    render(
+      <TodoList
+        todos={todos}
+        isLoading={false}
+        hasNextPage={false}
+        isFetchingNextPage={false}
+        onToggle={vi.fn()}
+        onDelete={vi.fn()}
+        fetchNextPage={vi.fn()}
+        getTodoState={getTodoState}
+        getErrorMessage={getErrorMessage}
+      />,
+    );
+    expect(getErrorMessage).toHaveBeenCalledWith("1");
+    expect(screen.getByText("Something went wrong")).toBeInTheDocument();
+  });
 });

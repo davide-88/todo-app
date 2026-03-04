@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button.js";
 import { PlaceholderRow } from "./placeholder-row.js";
 import { TodoRow } from "./todo-row.js";
-import type { Todo } from "@todo-app/shared";
+import type { Todo, TodoUiState } from "@todo-app/shared";
 import type { FetchNextPageOptions, InfiniteQueryObserverResult } from "@tanstack/react-query";
 
 const PLACEHOLDER_WIDTHS = [60, 45, 70, 55, 40];
@@ -15,6 +15,8 @@ interface TodoListProps {
   onDelete: (id: string) => void;
   onRetry?: (id: string) => void;
   fetchNextPage: (options?: FetchNextPageOptions) => Promise<InfiniteQueryObserverResult>;
+  getTodoState?: (id: string) => TodoUiState;
+  getErrorMessage?: (id: string) => string | undefined;
 }
 
 export const TodoList = ({
@@ -26,6 +28,8 @@ export const TodoList = ({
   onDelete,
   onRetry,
   fetchNextPage,
+  getTodoState,
+  getErrorMessage,
 }: TodoListProps) => {
   const showPlaceholders = isLoading || todos.length === 0;
 
@@ -38,7 +42,8 @@ export const TodoList = ({
               <TodoRow
                 key={todo.id}
                 todo={todo}
-                state="confirmed"
+                state={getTodoState?.(todo.id) ?? "confirmed"}
+                errorMessage={getErrorMessage?.(todo.id)}
                 onToggle={onToggle}
                 onDelete={onDelete}
                 onRetry={onRetry}

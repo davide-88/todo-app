@@ -7,11 +7,14 @@ type ErrorBody = { code?: string; message?: string; details?: unknown };
 export class ApiFetchError extends Error implements ApiError {
   code: string;
   details?: unknown;
+  status: number;
 
-  constructor(code: string, message: string, details?: unknown) {
+  constructor(code: string, message: string, details?: unknown, status: number = 0) {
     super(message);
+    this.name = "ApiFetchError";
     this.code = code;
     this.details = details;
+    this.status = status;
   }
 }
 
@@ -35,6 +38,7 @@ export async function apiFetch<T>(
       body.code ?? "UNKNOWN_ERROR",
       body.message ?? response.statusText,
       body.details,
+      response.status,
     );
   }
   if (response.status === 204) return undefined as T;
