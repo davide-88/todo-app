@@ -1,6 +1,6 @@
 # Story 1.3: Frontend Shell & Todo List Display
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -40,98 +40,98 @@ so that I can immediately review what I need to do.
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1 — Install shadcn/ui primitives + TanStack Query** (AC: all)
-  - [ ] Run `npx shadcn@latest add input checkbox button tabs` inside `packages/frontend`
-  - [ ] Install `@tanstack/react-query` v5 as dependency
-  - [ ] Install `@testing-library/react` + `@testing-library/jest-dom` as devDependencies
-  - [ ] Verify all packages install without conflicts
+- [x] **Task 1 — Install shadcn/ui primitives + TanStack Query** (AC: all)
+  - [x] Run `npx shadcn@latest add input checkbox button tabs` inside `packages/frontend`
+  - [x] Install `@tanstack/react-query` v5 as dependency
+  - [x] Install `@testing-library/react` + `@testing-library/jest-dom` as devDependencies
+  - [x] Verify all packages install without conflicts
 
-- [ ] **Task 2 — apiFetch wrapper** (AC: 5)
-  - [ ] Create `packages/frontend/src/lib/api-fetch.ts` — fetch wrapper with `VITE_API_BASE_URL` base URL from `import.meta.env.VITE_API_BASE_URL`
-  - [ ] Handle JSON response parsing
-  - [ ] Normalize non-2xx responses to `{ code, message, details? }` shape using `ApiError` type from `@todo-app/shared`
-  - [ ] Handle network errors (fetch throws) — normalize to `{ code: "NETWORK_ERROR", message: "..." }`
-  - [ ] Write `packages/frontend/src/lib/api-fetch.test.ts` — unit tests with mocked `fetch`: success, 400, 500, network error
+- [x] **Task 2 — apiFetch wrapper** (AC: 5)
+  - [x] Create `packages/frontend/src/lib/api-fetch.ts` — fetch wrapper with `VITE_API_BASE_URL` base URL from `import.meta.env.VITE_API_BASE_URL`
+  - [x] Handle JSON response parsing
+  - [x] Normalize non-2xx responses to `{ code, message, details? }` shape using `ApiError` type from `@todo-app/shared`
+  - [x] Handle network errors (fetch throws) — normalize to `{ code: "NETWORK_ERROR", message: "..." }`
+  - [x] Write `packages/frontend/src/lib/api-fetch.test.ts` — unit tests with mocked `fetch`: success, 400, 500, network error
 
-- [ ] **Task 3 — QueryClient configuration** (AC: all)
-  - [ ] Create `packages/frontend/src/lib/query-client.ts` — TanStack `QueryClient` with default options
-  - [ ] Defaults: `staleTime: 0`, `retry: false` (error handling is per-todo, not auto-retry)
-  - [ ] Update `packages/frontend/src/main.tsx` to wrap `<App />` in `<QueryClientProvider>`
+- [x] **Task 3 — QueryClient configuration** (AC: all)
+  - [x] Create `packages/frontend/src/lib/query-client.ts` — TanStack `QueryClient` with default options
+  - [x] Defaults: `staleTime: 0`, `retry: false` (error handling is per-todo, not auto-retry)
+  - [x] Update `packages/frontend/src/main.tsx` to wrap `<App />` in `<QueryClientProvider>`
 
-- [ ] **Task 4 — useTodos hook** (AC: 1, 2, 3)
-  - [ ] Create `packages/frontend/src/hooks/use-todos.ts` — `useInfiniteQuery` hook wrapping `GET /api/todos` via `apiFetch`
-  - [ ] Accept `status` filter (active/completed) and `order` (asc/desc) parameters
-  - [ ] Handle cursor-based pagination: pass `cursor` from previous page's last item
-  - [ ] Return `{ todos, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, error }` — flatten pages into single array
-  - [ ] Write `packages/frontend/src/hooks/use-todos.test.ts` — unit tests with mocked `apiFetch`: loading state, success with data, empty list, pagination (hasNextPage true/false)
+- [x] **Task 4 — useTodos hook** (AC: 1, 2, 3)
+  - [x] Create `packages/frontend/src/hooks/use-todos.ts` — `useInfiniteQuery` hook wrapping `GET /api/todos` via `apiFetch`
+  - [x] Accept `status` filter (active/completed) and `order` (asc/desc) parameters
+  - [x] Handle cursor-based pagination: pass `cursor` from previous page's last item
+  - [x] Return `{ todos, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, error }` — flatten pages into single array
+  - [x] Write `packages/frontend/src/hooks/use-todos.test.ts` — unit tests with mocked `apiFetch`: loading state, success with data, empty list, pagination (hasNextPage true/false)
 
-- [ ] **Task 5 — PlaceholderRow component** (AC: 1, 3)
-  - [ ] Create `packages/frontend/src/components/placeholder-row.tsx`
-  - [ ] Static skeleton: 48px min height, checkbox placeholder (18x18px rounded rect, border color), text placeholder (rounded rect, border color, varied widths 40-70%)
-  - [ ] No animation (static skeleton per UX spec)
-  - [ ] Write `packages/frontend/src/components/placeholder-row.test.tsx`
+- [x] **Task 5 — PlaceholderRow component** (AC: 1, 3)
+  - [x] Create `packages/frontend/src/components/placeholder-row.tsx`
+  - [x] Static skeleton: 48px min height, checkbox placeholder (18x18px rounded rect, border color), text placeholder (rounded rect, border color, varied widths 40-70%)
+  - [x] No animation (static skeleton per UX spec)
+  - [x] Write `packages/frontend/src/components/placeholder-row.test.tsx`
 
-- [ ] **Task 6 — StatusDot component** (AC: 2)
-  - [ ] Create `packages/frontend/src/components/status-dot.tsx`
-  - [ ] Variants: `syncing` (blue #3B82F6, pulse animation), `error` (red #DC2626, static), `hidden` (not rendered)
-  - [ ] 8x8px circle
-  - [ ] `role="status"`, `aria-label="Syncing"` or `"Error"`
-  - [ ] Respect `prefers-reduced-motion`: disable pulse when set
-  - [ ] Write `packages/frontend/src/components/status-dot.test.tsx`
+- [x] **Task 6 — StatusDot component** (AC: 2)
+  - [x] Create `packages/frontend/src/components/status-dot.tsx`
+  - [x] Variants: `syncing` (blue #3B82F6, pulse animation), `error` (red #DC2626, static), `hidden` (not rendered)
+  - [x] 8x8px circle
+  - [x] `role="status"`, `aria-label="Syncing"` or `"Error"`
+  - [x] Respect `prefers-reduced-motion`: disable pulse when set
+  - [x] Write `packages/frontend/src/components/status-dot.test.tsx`
 
-- [ ] **Task 7 — TodoRow component** (AC: 2)
-  - [ ] Create `packages/frontend/src/components/todo-row.tsx`
-  - [ ] Props: `todo`, `state` (TodoUiState from shared), `errorMessage?`, `onToggle`, `onDelete`, `onRetry?`
-  - [ ] States: confirmed-active (normal text, unchecked), confirmed-completed (strikethrough, muted, checked), syncing (muted 50% opacity, disabled, blue dot), transient-error (red bg tint, frozen checkbox, retry + delete visible), permanent-error (red bg tint, frozen checkbox, error message, delete only)
-  - [ ] Delete button: hover-reveal on desktop for confirmed rows, always visible on error rows and mobile
-  - [ ] Timestamp display: relative time (e.g., "2m ago") in `--muted-foreground`, right-aligned
-  - [ ] `role="listitem"`, `aria-disabled="true"` when syncing
-  - [ ] `aria-label` on icon buttons: "Delete todo: [text]", "Retry todo: [text]"
-  - [ ] Write `packages/frontend/src/components/todo-row.test.tsx` — test all 5 visual states, accessibility attributes
+- [x] **Task 7 — TodoRow component** (AC: 2)
+  - [x] Create `packages/frontend/src/components/todo-row.tsx`
+  - [x] Props: `todo`, `state` (TodoUiState from shared), `errorMessage?`, `onToggle`, `onDelete`, `onRetry?`
+  - [x] States: confirmed-active (normal text, unchecked), confirmed-completed (strikethrough, muted, checked), syncing (muted 50% opacity, disabled, blue dot), transient-error (red bg tint, frozen checkbox, retry + delete visible), permanent-error (red bg tint, frozen checkbox, error message, delete only)
+  - [x] Delete button: hover-reveal on desktop for confirmed rows, always visible on error rows and mobile
+  - [x] Timestamp display: relative time (e.g., "2m ago") in `--muted-foreground`, right-aligned
+  - [x] `role="listitem"`, `aria-disabled="true"` when syncing
+  - [x] `aria-label` on icon buttons: "Delete todo: [text]", "Retry todo: [text]"
+  - [x] Write `packages/frontend/src/components/todo-row.test.tsx` — test all 5 visual states, accessibility attributes
 
-- [ ] **Task 8 — ErrorMessage component** (AC: 2)
-  - [ ] Create `packages/frontend/src/components/error-message.tsx`
-  - [ ] 13px font, `--destructive` color, 4px top padding
-  - [ ] Only rendered when `state === 'permanent-error'`
-  - [ ] `role="alert"`, linked to TodoRow via `aria-describedby`
-  - [ ] Write `packages/frontend/src/components/error-message.test.tsx`
+- [x] **Task 8 — ErrorMessage component** (AC: 2)
+  - [x] Create `packages/frontend/src/components/error-message.tsx`
+  - [x] 13px font, `--destructive` color, 4px top padding
+  - [x] Only rendered when `state === 'permanent-error'`
+  - [x] `role="alert"`, linked to TodoRow via `aria-describedby`
+  - [x] Write `packages/frontend/src/components/error-message.test.tsx`
 
-- [ ] **Task 9 — TodoList component** (AC: 1, 2, 3)
-  - [ ] Create `packages/frontend/src/components/todo-list.tsx`
-  - [ ] Renders TodoRow[] when data exists, PlaceholderRow[] when empty (after fetch completes), PlaceholderRow[] during initial loading
-  - [ ] `role="list"`, `aria-live="polite"` on the container
-  - [ ] "Load more" button when `hasNextPage` is true (disabled during `isFetchingNextPage`)
-  - [ ] Write `packages/frontend/src/components/todo-list.test.tsx`
+- [x] **Task 9 — TodoList component** (AC: 1, 2, 3)
+  - [x] Create `packages/frontend/src/components/todo-list.tsx`
+  - [x] Renders TodoRow[] when data exists, PlaceholderRow[] when empty (after fetch completes), PlaceholderRow[] during initial loading
+  - [x] `role="list"`, `aria-live="polite"` on the container
+  - [x] "Load more" button when `hasNextPage` is true (disabled during `isFetchingNextPage`)
+  - [x] Write `packages/frontend/src/components/todo-list.test.tsx`
 
-- [ ] **Task 10 — AppHeader component** (AC: 4)
-  - [ ] Create `packages/frontend/src/components/app-header.tsx`
-  - [ ] Title "todos" left-aligned, 20px font-weight 600
-  - [ ] Sort toggle button right-aligned: "Newest first" / "Oldest first" (ghost Button variant)
-  - [ ] `--card` background (#FAFAFA), bottom border
-  - [ ] `aria-label="Sort order: newest first"` (updates dynamically)
-  - [ ] Write `packages/frontend/src/components/app-header.test.tsx`
+- [x] **Task 10 — AppHeader component** (AC: 4)
+  - [x] Create `packages/frontend/src/components/app-header.tsx`
+  - [x] Title "todos" left-aligned, 20px font-weight 600
+  - [x] Sort toggle button right-aligned: "Newest first" / "Oldest first" (ghost Button variant)
+  - [x] `--card` background (#FAFAFA), bottom border
+  - [x] `aria-label="Sort order: newest first"` (updates dynamically)
+  - [x] Write `packages/frontend/src/components/app-header.test.tsx`
 
-- [ ] **Task 11 — InputArea component (display-only for this story)** (AC: 1)
-  - [ ] Create `packages/frontend/src/components/input-area.tsx`
-  - [ ] Input field with placeholder "What needs to be done?" + "Add Todo" button
-  - [ ] Visually complete per UX spec: `--card` background on input, `--primary` border on focus, 8px gap
-  - [ ] `aria-label="New todo text"` on input
-  - [ ] **Submission logic is Story 1.4** — this story only renders the visual component. Wire `onSubmit` prop but do not implement the mutation hook.
-  - [ ] Write `packages/frontend/src/components/input-area.test.tsx`
+- [x] **Task 11 — InputArea component (display-only for this story)** (AC: 1)
+  - [x] Create `packages/frontend/src/components/input-area.tsx`
+  - [x] Input field with placeholder "What needs to be done?" + "Add Todo" button
+  - [x] Visually complete per UX spec: `--card` background on input, `--primary` border on focus, 8px gap
+  - [x] `aria-label="New todo text"` on input
+  - [x] **Submission logic is Story 1.4** — this story only renders the visual component. Wire `onSubmit` prop but do not implement the mutation hook.
+  - [x] Write `packages/frontend/src/components/input-area.test.tsx`
 
-- [ ] **Task 12 — App shell composition** (AC: 1, 2, 3, 4)
-  - [ ] Update `packages/frontend/src/app.tsx` to compose: AppHeader → InputArea → Tabs (Active/Completed, display-only) → TodoList
-  - [ ] Layout: centered max-width 640px on desktop (>=768px), full-width 16px padding on mobile
-  - [ ] Outer container with 1px border, 12px border-radius per UX spec
-  - [ ] Wire `useTodos` hook with default params (no filter, descending order)
-  - [ ] Tabs are visual-only in this story (Active selected by default) — filtering logic is Story 3.1
-  - [ ] Google Fonts: add Roboto 400/500 with `font-display: swap` to `index.html`
+- [x] **Task 12 — App shell composition** (AC: 1, 2, 3, 4)
+  - [x] Update `packages/frontend/src/app.tsx` to compose: AppHeader → InputArea → Tabs (Active/Completed, display-only) → TodoList
+  - [x] Layout: centered max-width 640px on desktop (>=768px), full-width 16px padding on mobile
+  - [x] Outer container with 1px border, 12px border-radius per UX spec
+  - [x] Wire `useTodos` hook with default params (no filter, descending order)
+  - [x] Tabs are visual-only in this story (Active selected by default) — filtering logic is Story 3.1
+  - [x] Google Fonts: add Roboto 400/500 with `font-display: swap` to `index.html`
 
-- [ ] **Task 13 — Verify** (AC: all)
-  - [ ] `pnpm --filter @todo-app/frontend typecheck` passes with 0 errors
-  - [ ] `pnpm lint` passes with 0 errors
-  - [ ] `pnpm --filter @todo-app/frontend test` — all unit tests green
-  - [ ] Frontend renders in browser: app shell visible, placeholder rows on empty server, todo list with data from running backend
+- [x] **Task 13 — Verify** (AC: all)
+  - [x] `pnpm --filter @todo-app/frontend typecheck` passes with 0 errors
+  - [x] `pnpm lint` passes with 0 errors
+  - [x] `pnpm --filter @todo-app/frontend test` — all unit tests green
+  - [x] Frontend renders in browser: app shell visible, placeholder rows on empty server, todo list with data from running backend
 
 ## Dev Notes
 
@@ -559,10 +559,69 @@ packages/frontend/
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+claude-sonnet-4-6
 
 ### Debug Log References
 
+- Vitest `globals: false` + `@testing-library/jest-dom`: used `import { expect } from 'vitest'; import * as matchers from '@testing-library/jest-dom/matchers'; expect.extend(matchers)` pattern in test-setup.ts instead of direct `import '@testing-library/jest-dom'`
+- Added global `afterEach(cleanup)` in test-setup.ts to fix DOM state leakage between tests
+- `@typescript-eslint/only-throw-error` conflict with plain `ApiError` objects: resolved by creating `ApiFetchError extends Error implements ApiError` class
+- `import.meta.env.VITE_API_BASE_URL` typed as `any` due to vite env index signature: fixed with custom `vite-env.d.ts` that types `VITE_API_BASE_URL: string | undefined`
+- `@testing-library/jest-dom` TS types: added `/// <reference types="@testing-library/jest-dom" />` in `vitest.d.ts` and `"types": ["vite/client"]` in tsconfig.json
+- pnpm store migration: required `CI=true pnpm install` before package installs worked
+
 ### Completion Notes List
 
+- All 13 tasks implemented with TDD (red-green-refactor) cycle
+- 58 unit tests across 10 test files — all passing (post-review)
+- TypeScript typecheck: 0 errors
+- ESLint lint: 0 errors
+- Components: PlaceholderRow, StatusDot, TodoRow, ErrorMessage, TodoList, AppHeader, InputArea
+- Hooks: useTodos (useInfiniteQuery wrapping apiFetch)
+- Lib: apiFetch (ApiFetchError class), queryClient, formatRelativeTime
+- App shell composed: AppHeader → InputArea → Tabs (visual-only) → TodoList
+- Mutations (toggle/delete/create) are no-ops — deferred to Stories 1.4 and 1.5 per spec
+
 ### File List
+
+packages/frontend/index.html
+packages/frontend/package.json
+packages/frontend/vitest.config.ts
+packages/frontend/tsconfig.json
+packages/frontend/src/test-setup.ts
+packages/frontend/src/vite-env.d.ts
+packages/frontend/src/vitest.d.ts
+packages/frontend/src/main.tsx
+packages/frontend/src/app.tsx
+packages/frontend/src/styles/globals.css
+packages/frontend/src/components/ui/input.tsx
+packages/frontend/src/components/ui/checkbox.tsx
+packages/frontend/src/components/ui/button.tsx
+packages/frontend/src/components/ui/tabs.tsx
+packages/frontend/src/components/placeholder-row.tsx
+packages/frontend/src/components/placeholder-row.test.tsx
+packages/frontend/src/components/status-dot.tsx
+packages/frontend/src/components/status-dot.test.tsx
+packages/frontend/src/components/todo-row.tsx
+packages/frontend/src/components/todo-row.test.tsx
+packages/frontend/src/components/error-message.tsx
+packages/frontend/src/components/error-message.test.tsx
+packages/frontend/src/components/todo-list.tsx
+packages/frontend/src/components/todo-list.test.tsx
+packages/frontend/src/components/app-header.tsx
+packages/frontend/src/components/app-header.test.tsx
+packages/frontend/src/components/input-area.tsx
+packages/frontend/src/components/input-area.test.tsx
+packages/frontend/src/hooks/use-todos.ts
+packages/frontend/src/hooks/use-todos.test.ts
+packages/frontend/src/lib/api-fetch.ts
+packages/frontend/src/lib/api-fetch.test.ts
+packages/frontend/src/lib/query-client.ts
+packages/frontend/src/lib/format-relative-time.ts
+packages/frontend/src/lib/format-relative-time.test.ts
+pnpm-lock.yaml
+
+## Change Log
+
+- 2026-03-03: Story 1.3 implemented — frontend shell, all components, useTodos hook, apiFetch wrapper, 51 unit tests passing (claude-sonnet-4-6)
+- 2026-03-04: Code review fixes (claude-opus-4-6): H1 apiFetch header merge bug, H2 Load more literal quotes, H3 ErrorMessage layout restructured below row, H4 delete button mobile visibility, M1 aria-describedby linkage, M2 ul→div[role=list] for valid HTML, M3 File List updated, M4 +7 tests added (58 total)
