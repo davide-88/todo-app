@@ -625,3 +625,4 @@ pnpm-lock.yaml
 
 - 2026-03-03: Story 1.3 implemented — frontend shell, all components, useTodos hook, apiFetch wrapper, 51 unit tests passing (claude-sonnet-4-6)
 - 2026-03-04: Code review fixes (claude-opus-4-6): H1 apiFetch header merge bug, H2 Load more literal quotes, H3 ErrorMessage layout restructured below row, H4 delete button mobile visibility, M1 aria-describedby linkage, M2 ul→div[role=list] for valid HTML, M3 File List updated, M4 +7 tests added (58 total)
+- 2026-03-04: Visual alignment fixes (claude-sonnet-4-6): added @theme inline to globals.css to wire CSS vars to Tailwind v4 color utilities (root fix for bg-primary/bg-muted no-ops); AppHeader sort button → outline variant with ArrowUpDown icon; InputArea container bg-card, input field bg-muted/50; Tabs → full-width underline style with active border-foreground / inactive border-border; active tab bg-muted/50
