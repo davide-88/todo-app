@@ -1,11 +1,15 @@
 import { ApiFetchError } from "@/lib/api-fetch.js";
 import type { Todo, TodoUiState } from "@todo-app/shared";
+import type { PendingOperation } from "@/hooks/use-todo-states.js";
 
 export type TodoPage = { data: Todo[]; cursor: string | null };
 export type TodoInfiniteData = { pages: TodoPage[]; pageParams: unknown[] };
 
 export interface TodoMutationCallbacks {
-  setTodoState: (id: string, entry: { state: TodoUiState; errorMessage?: string }) => void;
+  setTodoState: (
+    id: string,
+    entry: { state: TodoUiState; errorMessage?: string; pendingOperation?: PendingOperation },
+  ) => void;
   clearTodoState: (id: string) => void;
 }
 

@@ -121,7 +121,14 @@ describe("useToggleTodo", () => {
     // Cache must be rolled back to original false
     const data = queryClient.getQueryData<{ pages: { data: { id: string; completed: boolean }[] }[] }>(QUERY_KEY);
     expect(data?.pages[0]?.data[0]?.completed).toBe(false);
-    expect(setTodoState).toHaveBeenLastCalledWith("a", { state: "transient-error" });
+    expect(setTodoState).toHaveBeenLastCalledWith(
+      "a",
+      expect.objectContaining({
+        state: "transient-error",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        pendingOperation: expect.objectContaining({ type: "toggle" }),
+      }),
+    );
   });
 
   it("permanent error (400) → rollback to previous value + permanent-error state with message", async () => {
@@ -151,10 +158,15 @@ describe("useToggleTodo", () => {
     // Rolled back to original true
     const data = queryClient.getQueryData<{ pages: { data: { id: string; completed: boolean }[] }[] }>(QUERY_KEY);
     expect(data?.pages[0]?.data[0]?.completed).toBe(true);
-    expect(setTodoState).toHaveBeenLastCalledWith("a", {
-      state: "permanent-error",
-      errorMessage: "Bad input",
-    });
+    expect(setTodoState).toHaveBeenLastCalledWith(
+      "a",
+      expect.objectContaining({
+        state: "permanent-error",
+        errorMessage: "Bad input",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        pendingOperation: expect.objectContaining({ type: "toggle" }),
+      }),
+    );
   });
 
   it("429 rate limited → transient-error", async () => {
@@ -180,7 +192,14 @@ describe("useToggleTodo", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(setTodoState).toHaveBeenLastCalledWith("a", { state: "transient-error" });
+    expect(setTodoState).toHaveBeenLastCalledWith(
+      "a",
+      expect.objectContaining({
+        state: "transient-error",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        pendingOperation: expect.objectContaining({ type: "toggle" }),
+      }),
+    );
   });
 
   it("NETWORK_ERROR → transient-error (error classification reuse)", async () => {
@@ -206,7 +225,14 @@ describe("useToggleTodo", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(setTodoState).toHaveBeenLastCalledWith("a", { state: "transient-error" });
+    expect(setTodoState).toHaveBeenLastCalledWith(
+      "a",
+      expect.objectContaining({
+        state: "transient-error",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        pendingOperation: expect.objectContaining({ type: "toggle" }),
+      }),
+    );
   });
 
   it("concurrent toggles on different todos → independent states", async () => {

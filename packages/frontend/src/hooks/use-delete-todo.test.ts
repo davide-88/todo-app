@@ -98,7 +98,14 @@ describe("useDeleteTodo", () => {
     const data = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
     const ids = data?.pages[0]?.data.map((t) => t.id);
     expect(ids).toContain("a");
-    expect(setTodoState).toHaveBeenLastCalledWith("a", { state: "transient-error" });
+    expect(setTodoState).toHaveBeenLastCalledWith(
+      "a",
+      expect.objectContaining({
+        state: "transient-error",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        pendingOperation: expect.objectContaining({ type: "delete" }),
+      }),
+    );
   });
 
   it("permanent error → todo reappears + permanent-error state with message", async () => {
@@ -127,10 +134,15 @@ describe("useDeleteTodo", () => {
 
     const data = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
     expect(data?.pages[0]?.data.some((t) => t.id === "a")).toBe(true);
-    expect(setTodoState).toHaveBeenLastCalledWith("a", {
-      state: "permanent-error",
-      errorMessage: "Permanent failure",
-    });
+    expect(setTodoState).toHaveBeenLastCalledWith(
+      "a",
+      expect.objectContaining({
+        state: "permanent-error",
+        errorMessage: "Permanent failure",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        pendingOperation: expect.objectContaining({ type: "delete" }),
+      }),
+    );
   });
 
   it("delete from middle of paginated list → other items maintain position", async () => {

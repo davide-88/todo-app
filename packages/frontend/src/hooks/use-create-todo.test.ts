@@ -186,10 +186,15 @@ describe("useCreateTodo", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
-    expect(setTodoState).toHaveBeenLastCalledWith("new-id", {
-      state: "permanent-error",
-      errorMessage: "Text too long",
-    });
+    expect(setTodoState).toHaveBeenLastCalledWith(
+      "new-id",
+      expect.objectContaining({
+        state: "permanent-error",
+        errorMessage: "Text too long",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        pendingOperation: expect.objectContaining({ type: "create" }),
+      }),
+    );
   });
 
   it("classifies 422 error as permanent-error", async () => {
@@ -246,7 +251,14 @@ describe("useCreateTodo", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
-    expect(setTodoState).toHaveBeenLastCalledWith("new-id", { state: "transient-error" });
+    expect(setTodoState).toHaveBeenLastCalledWith(
+      "new-id",
+      expect.objectContaining({
+        state: "transient-error",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        pendingOperation: expect.objectContaining({ type: "create" }),
+      }),
+    );
   });
 
   it("classifies 500 error as transient-error", async () => {
@@ -273,7 +285,14 @@ describe("useCreateTodo", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
-    expect(setTodoState).toHaveBeenLastCalledWith("new-id", { state: "transient-error" });
+    expect(setTodoState).toHaveBeenLastCalledWith(
+      "new-id",
+      expect.objectContaining({
+        state: "transient-error",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        pendingOperation: expect.objectContaining({ type: "create" }),
+      }),
+    );
   });
 
   it("treats unknown error as transient (safe default)", async () => {
@@ -298,7 +317,14 @@ describe("useCreateTodo", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
-    expect(setTodoState).toHaveBeenLastCalledWith("new-id", { state: "transient-error" });
+    expect(setTodoState).toHaveBeenLastCalledWith(
+      "new-id",
+      expect.objectContaining({
+        state: "transient-error",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        pendingOperation: expect.objectContaining({ type: "create" }),
+      }),
+    );
   });
 
   it("classifies 429 rate-limited error as transient-error", async () => {
@@ -325,7 +351,14 @@ describe("useCreateTodo", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
-    expect(setTodoState).toHaveBeenLastCalledWith("new-id", { state: "transient-error" });
+    expect(setTodoState).toHaveBeenLastCalledWith(
+      "new-id",
+      expect.objectContaining({
+        state: "transient-error",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        pendingOperation: expect.objectContaining({ type: "create" }),
+      }),
+    );
   });
 
   it("5 rapid concurrent creates each produce independent optimistic entries", async () => {
@@ -367,6 +400,89 @@ describe("useCreateTodo", () => {
       for (let i = 1; i <= 5; i++) {
         expect(clearTodoState).toHaveBeenCalledWith(`id-${i}`);
       }
+    });
+  });
+
+  it("stores pendingOperation on transient error for retry", async () => {
+    const queryClient = makeQueryClient();
+    queryClient.setQueryData(QUERY_KEY, {
+      pages: [{ data: [], cursor: null }],
+      pageParams: [undefined],
+    });
+
+    const setTodoState = vi.fn();
+    const clearTodoState = vi.fn();
+    mockApiFetch.mockRejectedValueOnce(
+      new ApiFetchError("NETWORK_ERROR", "Network failed", undefined, 0),
+    );
+
+    const { result } = renderHook(
+      () => useCreateTodo({ setTodoState, clearTodoState }),
+      { wrapper: makeWrapper(queryClient) },
+    );
+
+    act(() => {
+      result.current.mutate({ id: "new-id", text: "New todo" });
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+
+    expect(setTodoState).toHaveBeenLastCalledWith(
+      "new-id",
+      expect.objectContaining({
+        state: "transient-error",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        pendingOperation: expect.objectContaining({
+          type: "create",
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          args: expect.objectContaining({ id: "new-id", text: "New todo" }),
+        }),
+      }),
+    );
+  });
+
+  it("retry after failed create does not duplicate the optimistic todo", async () => {
+    const queryClient = makeQueryClient();
+    queryClient.setQueryData(QUERY_KEY, {
+      pages: [{ data: [], cursor: null }],
+      pageParams: [undefined],
+    });
+
+    const setTodoState = vi.fn();
+    const clearTodoState = vi.fn();
+
+    // First call fails, second (retry) succeeds
+    mockApiFetch
+      .mockRejectedValueOnce(new ApiFetchError("NETWORK_ERROR", "Network failed", undefined, 0))
+      .mockResolvedValueOnce(makeTodo("new-id", "New todo"));
+
+    const { result } = renderHook(
+      () => useCreateTodo({ setTodoState, clearTodoState }),
+      { wrapper: makeWrapper(queryClient) },
+    );
+
+    // Initial create → fails
+    act(() => {
+      result.current.mutate({ id: "new-id", text: "New todo" });
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+
+    // Optimistic todo should be in cache once
+    const beforeRetry = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
+    const countBefore = beforeRetry?.pages.flatMap((p) => p.data).filter((t) => t.id === "new-id").length;
+    expect(countBefore).toBe(1);
+
+    // Retry the same create
+    act(() => {
+      result.current.mutate({ id: "new-id", text: "New todo" });
+    });
+
+    // Should still be exactly one entry, not duplicated
+    await waitFor(() => {
+      const afterRetry = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
+      const countAfter = afterRetry?.pages.flatMap((p) => p.data).filter((t) => t.id === "new-id").length;
+      expect(countAfter).toBe(1);
     });
   });
 });

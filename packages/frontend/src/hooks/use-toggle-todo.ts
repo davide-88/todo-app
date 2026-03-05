@@ -38,13 +38,20 @@ export function useToggleTodo({ setTodoState, clearTodoState }: TodoMutationCall
       void queryClient.invalidateQueries({ queryKey: ["todos"] });
       clearTodoState(id);
     },
-    onError: (error, { id }, context) => {
+    onError: (error, { id, completed }, context) => {
       if (context?.previousData) {
         for (const [queryKey, data] of context.previousData) {
           if (data) queryClient.setQueryData(queryKey, data);
         }
       }
-      setTodoState(id, classifyError(error));
+      const classified = classifyError(error);
+      setTodoState(id, {
+        ...classified,
+        pendingOperation: {
+          type: "toggle",
+          args: { id, completed },
+        },
+      });
     },
   });
 }

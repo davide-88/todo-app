@@ -38,7 +38,14 @@ export function useDeleteTodo({ setTodoState, clearTodoState }: TodoMutationCall
           if (data) queryClient.setQueryData(queryKey, data);
         }
       }
-      setTodoState(id, classifyError(error));
+      const classified = classifyError(error);
+      setTodoState(id, {
+        ...classified,
+        pendingOperation: {
+          type: "delete",
+          args: { id },
+        },
+      });
     },
   });
 }

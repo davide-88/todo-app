@@ -97,4 +97,58 @@ describe("useTodoStates", () => {
 
     expect(result.current.getTodoState("id-1")).toBe("transient-error");
   });
+
+  it("setTodoState stores pendingOperation alongside state", () => {
+    const { result } = renderHook(() => useTodoStates());
+
+    act(() => {
+      result.current.setTodoState("id-1", {
+        state: "transient-error",
+        errorMessage: "Timeout",
+        pendingOperation: { type: "create", args: { id: "id-1", text: "Test" } },
+      });
+    });
+
+    const entry = result.current.getTodoStateEntry("id-1");
+    expect(entry).toEqual({
+      state: "transient-error",
+      errorMessage: "Timeout",
+      pendingOperation: { type: "create", args: { id: "id-1", text: "Test" } },
+    });
+  });
+
+  it("getTodoStateEntry returns full entry with pendingOperation", () => {
+    const { result } = renderHook(() => useTodoStates());
+
+    act(() => {
+      result.current.setTodoState("id-1", {
+        state: "transient-error",
+        pendingOperation: { type: "toggle", args: { id: "id-1", completed: true } },
+      });
+    });
+
+    const entry = result.current.getTodoStateEntry("id-1");
+    expect(entry?.pendingOperation?.type).toBe("toggle");
+  });
+
+  it("getTodoStateEntry returns undefined for unknown IDs", () => {
+    const { result } = renderHook(() => useTodoStates());
+    expect(result.current.getTodoStateEntry("unknown-id")).toBeUndefined();
+  });
+
+  it("clearTodoState removes pendingOperation", () => {
+    const { result } = renderHook(() => useTodoStates());
+
+    act(() => {
+      result.current.setTodoState("id-1", {
+        state: "transient-error",
+        pendingOperation: { type: "delete", args: { id: "id-1" } },
+      });
+    });
+    act(() => {
+      result.current.clearTodoState("id-1");
+    });
+
+    expect(result.current.getTodoStateEntry("id-1")).toBeUndefined();
+  });
 });

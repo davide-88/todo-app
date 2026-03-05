@@ -1,9 +1,15 @@
 import { useState, useCallback } from "react";
 import type { TodoUiState } from "@todo-app/shared";
 
-interface TodoStateEntry {
+export type PendingOperation =
+  | { type: "create"; args: { id: string; text: string } }
+  | { type: "toggle"; args: { id: string; completed: boolean } }
+  | { type: "delete"; args: { id: string } };
+
+export interface TodoStateEntry {
   state: TodoUiState;
   errorMessage?: string;
+  pendingOperation?: PendingOperation;
 }
 
 export function useTodoStates() {
@@ -31,5 +37,10 @@ export function useTodoStates() {
     [stateMap],
   );
 
-  return { getTodoState, getErrorMessage, setTodoState, clearTodoState };
+  const getTodoStateEntry = useCallback(
+    (id: string): TodoStateEntry | undefined => stateMap.get(id),
+    [stateMap],
+  );
+
+  return { getTodoState, getErrorMessage, setTodoState, clearTodoState, getTodoStateEntry };
 }

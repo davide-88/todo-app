@@ -31,6 +31,9 @@ export function useCreateTodo({ setTodoState, clearTodoState }: TodoMutationCall
         { queryKey: ["todos"] },
         (old) => {
           if (!old || !old.pages[0]) return old;
+          // On retry, the optimistic todo is already in the cache — skip insert
+          const alreadyExists = old.pages.some((p) => p.data.some((t) => t.id === input.id));
+          if (alreadyExists) return old;
           const firstPage = old.pages[0];
           const newPages = [...old.pages];
           newPages[0] = {
@@ -53,7 +56,14 @@ export function useCreateTodo({ setTodoState, clearTodoState }: TodoMutationCall
     onError: (error, input) => {
       // CRITICAL: DO NOT rollback — keep optimistic todo visible for retry/delete (AC 3)
       // CRITICAL: DO NOT invalidate — refetch would remove local-only optimistic todo
-      setTodoState(input.id, classifyError(error));
+      const classified = classifyError(error);
+      setTodoState(input.id, {
+        ...classified,
+        pendingOperation: {
+          type: "create",
+          args: { id: input.id, text: input.text },
+        },
+      });
     },
   });
 }
