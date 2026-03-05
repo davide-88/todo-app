@@ -21,11 +21,7 @@ describe("apiFetch", () => {
 
     const result = await apiFetch("/api/todos");
     expect(result).toEqual({ data: [] });
-    expect(mockFetch).toHaveBeenCalledWith(
-      expect.stringContaining("/api/todos"),
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      expect.objectContaining({ headers: expect.objectContaining({ "Content-Type": "application/json" }) }),
-    );
+    expect(result).toBeDefined();
   });
 
   it("returns undefined on 204", async () => {
@@ -130,14 +126,34 @@ describe("apiFetch", () => {
     });
   });
 
-  it("preserves Content-Type when custom headers are provided", async () => {
+  it("sets Content-Type only when body is present", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({}),
+    });
+
+    // With body → Content-Type set
+    await apiFetch("/api/todos", { method: "POST", body: '{"text":"x"}' });
+    const withBody = mockFetch.mock.calls[0] as [string, RequestInit];
+    expect((withBody[1].headers as Record<string, string>)["Content-Type"]).toBe("application/json");
+
+    mockFetch.mockClear();
+
+    // Without body → Content-Type not set
+    await apiFetch("/api/todos/1", { method: "DELETE" });
+    const withoutBody = mockFetch.mock.calls[0] as [string, RequestInit];
+    expect((withoutBody[1].headers as Record<string, string>)["Content-Type"]).toBeUndefined();
+  });
+
+  it("merges custom headers alongside Content-Type when body present", async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 200,
       json: () => Promise.resolve({}),
     });
 
-    await apiFetch("/api/todos", { headers: { Authorization: "Bearer token" } });
+    await apiFetch("/api/todos", { method: "POST", body: '{}', headers: { Authorization: "Bearer token" } });
 
     const callArgs = mockFetch.mock.calls[0] as [string, RequestInit];
     const headers = callArgs[1].headers as Record<string, string>;
