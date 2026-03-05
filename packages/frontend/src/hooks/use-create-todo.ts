@@ -1,26 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiFetch, ApiFetchError } from "@/lib/api-fetch.js";
-import type { Todo, CreateTodo, TodoUiState } from "@todo-app/shared";
+import { apiFetch } from "@/lib/api-fetch.js";
+import { classifyError } from "@/lib/classify-error.js";
+import type { TodoInfiniteData, TodoMutationCallbacks } from "@/lib/classify-error.js";
+import type { Todo, CreateTodo } from "@todo-app/shared";
 
-interface CreateTodoCallbacks {
-  setTodoState: (id: string, entry: { state: TodoUiState; errorMessage?: string }) => void;
-  clearTodoState: (id: string) => void;
-}
-
-function classifyError(error: unknown): { state: TodoUiState; errorMessage?: string } {
-  if (error instanceof ApiFetchError) {
-    const isPermanent =
-      error.status === 400 ||
-      error.status === 422 ||
-      error.code === "VALIDATION_ERROR";
-    if (isPermanent) {
-      return { state: "permanent-error", errorMessage: error.message };
-    }
-  }
-  return { state: "transient-error" };
-}
-
-export function useCreateTodo({ setTodoState, clearTodoState }: CreateTodoCallbacks) {
+export function useCreateTodo({ setTodoState, clearTodoState }: TodoMutationCallbacks) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -33,9 +17,7 @@ export function useCreateTodo({ setTodoState, clearTodoState }: CreateTodoCallba
     onMutate: async (input: CreateTodo) => {
       await queryClient.cancelQueries({ queryKey: ["todos"] });
 
-      const previousData = queryClient.getQueriesData<{
-        pages: { data: Todo[]; cursor: string | null }[];
-      }>({ queryKey: ["todos"] });
+      const previousData = queryClient.getQueriesData<TodoInfiniteData>({ queryKey: ["todos"] });
 
       const optimisticTodo: Todo = {
         id: input.id,
@@ -45,10 +27,7 @@ export function useCreateTodo({ setTodoState, clearTodoState }: CreateTodoCallba
         updatedAt: new Date().toISOString(),
       };
 
-      queryClient.setQueriesData<{
-        pages: { data: Todo[]; cursor: string | null }[];
-        pageParams: unknown[];
-      }>(
+      queryClient.setQueriesData<TodoInfiniteData>(
         { queryKey: ["todos"] },
         (old) => {
           if (!old || !old.pages[0]) return old;

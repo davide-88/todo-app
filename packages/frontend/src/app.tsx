@@ -5,6 +5,8 @@ import { InputArea } from "./components/input-area.js";
 import { TodoList } from "./components/todo-list.js";
 import { useTodos } from "./hooks/use-todos.js";
 import { useCreateTodo } from "./hooks/use-create-todo.js";
+import { useToggleTodo } from "./hooks/use-toggle-todo.js";
+import { useDeleteTodo } from "./hooks/use-delete-todo.js";
 import { useTodoStates } from "./hooks/use-todo-states.js";
 
 export function App() {
@@ -16,10 +18,14 @@ export function App() {
 
   const { getTodoState, getErrorMessage, setTodoState, clearTodoState } = useTodoStates();
   const createMutation = useCreateTodo({ setTodoState, clearTodoState });
+  const toggleMutation = useToggleTodo({ setTodoState, clearTodoState });
+  const deleteMutation = useDeleteTodo({ setTodoState, clearTodoState });
 
-  // Story 1.5: toggle/delete mutations (no-ops until implemented)
-  const handleToggle: (id: string) => void = () => undefined;
-  const handleDelete: (id: string) => void = () => undefined;
+  const handleToggle = (id: string) => {
+    const todo = todos.find((t) => t.id === id);
+    if (todo) toggleMutation.mutate({ id, completed: !todo.completed });
+  };
+  const handleDelete = (id: string) => deleteMutation.mutate({ id });
 
   const handleSubmit = (text: string) => {
     createMutation.mutate({ id: crypto.randomUUID(), text });

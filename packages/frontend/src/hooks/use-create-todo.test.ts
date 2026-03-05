@@ -1,42 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { createElement } from "react";
-import type { ReactNode } from "react";
+import { createApiFetchMock, makeQueryClient, makeWrapper, QUERY_KEY } from "@/test-utils/mock-api.js";
 import { useCreateTodo } from "./use-create-todo.js";
 
-vi.mock("@/lib/api-fetch.js", () => {
-  class MockApiFetchError extends Error {
-    code: string;
-    status: number;
-    details?: unknown;
-    constructor(code: string, message: string, details?: unknown, status = 0) {
-      super(message);
-      this.name = "ApiFetchError";
-      this.code = code;
-      this.status = status;
-      this.details = details;
-    }
-  }
-  return {
-    apiFetch: vi.fn(),
-    ApiFetchError: MockApiFetchError,
-  };
-});
+vi.mock("@/lib/api-fetch.js", () => createApiFetchMock());
 
 import { apiFetch, ApiFetchError } from "@/lib/api-fetch.js";
 const mockApiFetch = vi.mocked(apiFetch);
-
-function makeQueryClient() {
-  return new QueryClient({
-    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
-  });
-}
-
-function makeWrapper(queryClient: QueryClient) {
-  return ({ children }: { children: ReactNode }) =>
-    createElement(QueryClientProvider, { client: queryClient }, children);
-}
 
 const makeTodo = (id: string, text: string) => ({
   id,
@@ -53,7 +23,7 @@ beforeEach(() => {
 describe("useCreateTodo", () => {
   it("inserts optimistic todo at top of first page on mutate", async () => {
     const queryClient = makeQueryClient();
-    queryClient.setQueryData(["todos", { status: undefined, order: "desc" }], {
+    queryClient.setQueryData(QUERY_KEY, {
       pages: [{ data: [makeTodo("existing", "Existing")], cursor: null }],
       pageParams: [undefined],
     });
@@ -73,7 +43,7 @@ describe("useCreateTodo", () => {
 
     await waitFor(() => {
       const data = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(
-        ["todos", { status: undefined, order: "desc" }],
+        QUERY_KEY,
       );
       expect(data?.pages[0]?.data[0]?.id).toBe("new-id");
     });
@@ -81,7 +51,7 @@ describe("useCreateTodo", () => {
 
   it("sets syncing state for new todo on mutate", async () => {
     const queryClient = makeQueryClient();
-    queryClient.setQueryData(["todos", { status: undefined, order: "desc" }], {
+    queryClient.setQueryData(QUERY_KEY, {
       pages: [{ data: [], cursor: null }],
       pageParams: [undefined],
     });
@@ -106,7 +76,7 @@ describe("useCreateTodo", () => {
 
   it("clears todo state and invalidates queries on success", async () => {
     const queryClient = makeQueryClient();
-    queryClient.setQueryData(["todos", { status: undefined, order: "desc" }], {
+    queryClient.setQueryData(QUERY_KEY, {
       pages: [{ data: [], cursor: null }],
       pageParams: [undefined],
     });
@@ -135,7 +105,7 @@ describe("useCreateTodo", () => {
 
   it("keeps optimistic todo in cache on error (no rollback)", async () => {
     const queryClient = makeQueryClient();
-    queryClient.setQueryData(["todos", { status: undefined, order: "desc" }], {
+    queryClient.setQueryData(QUERY_KEY, {
       pages: [{ data: [makeTodo("existing", "Existing")], cursor: null }],
       pageParams: [undefined],
     });
@@ -158,14 +128,14 @@ describe("useCreateTodo", () => {
     await waitFor(() => expect(result.current.isError).toBe(true));
 
     const data = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(
-      ["todos", { status: undefined, order: "desc" }],
+      QUERY_KEY,
     );
     expect(data?.pages[0]?.data.some((t) => t.id === "new-id")).toBe(true);
   });
 
   it("does not invalidate queries on error", async () => {
     const queryClient = makeQueryClient();
-    queryClient.setQueryData(["todos", { status: undefined, order: "desc" }], {
+    queryClient.setQueryData(QUERY_KEY, {
       pages: [{ data: [], cursor: null }],
       pageParams: [undefined],
     });
@@ -194,7 +164,7 @@ describe("useCreateTodo", () => {
 
   it("classifies 400 VALIDATION_ERROR as permanent-error with message", async () => {
     const queryClient = makeQueryClient();
-    queryClient.setQueryData(["todos", { status: undefined, order: "desc" }], {
+    queryClient.setQueryData(QUERY_KEY, {
       pages: [{ data: [], cursor: null }],
       pageParams: [undefined],
     });
@@ -224,7 +194,7 @@ describe("useCreateTodo", () => {
 
   it("classifies 422 error as permanent-error", async () => {
     const queryClient = makeQueryClient();
-    queryClient.setQueryData(["todos", { status: undefined, order: "desc" }], {
+    queryClient.setQueryData(QUERY_KEY, {
       pages: [{ data: [], cursor: null }],
       pageParams: [undefined],
     });
@@ -254,7 +224,7 @@ describe("useCreateTodo", () => {
 
   it("classifies NETWORK_ERROR as transient-error", async () => {
     const queryClient = makeQueryClient();
-    queryClient.setQueryData(["todos", { status: undefined, order: "desc" }], {
+    queryClient.setQueryData(QUERY_KEY, {
       pages: [{ data: [], cursor: null }],
       pageParams: [undefined],
     });
@@ -281,7 +251,7 @@ describe("useCreateTodo", () => {
 
   it("classifies 500 error as transient-error", async () => {
     const queryClient = makeQueryClient();
-    queryClient.setQueryData(["todos", { status: undefined, order: "desc" }], {
+    queryClient.setQueryData(QUERY_KEY, {
       pages: [{ data: [], cursor: null }],
       pageParams: [undefined],
     });
@@ -308,7 +278,7 @@ describe("useCreateTodo", () => {
 
   it("treats unknown error as transient (safe default)", async () => {
     const queryClient = makeQueryClient();
-    queryClient.setQueryData(["todos", { status: undefined, order: "desc" }], {
+    queryClient.setQueryData(QUERY_KEY, {
       pages: [{ data: [], cursor: null }],
       pageParams: [undefined],
     });
@@ -333,7 +303,7 @@ describe("useCreateTodo", () => {
 
   it("classifies 429 rate-limited error as transient-error", async () => {
     const queryClient = makeQueryClient();
-    queryClient.setQueryData(["todos", { status: undefined, order: "desc" }], {
+    queryClient.setQueryData(QUERY_KEY, {
       pages: [{ data: [], cursor: null }],
       pageParams: [undefined],
     });
@@ -360,7 +330,7 @@ describe("useCreateTodo", () => {
 
   it("5 rapid concurrent creates each produce independent optimistic entries", async () => {
     const queryClient = makeQueryClient();
-    queryClient.setQueryData(["todos", { status: undefined, order: "desc" }], {
+    queryClient.setQueryData(QUERY_KEY, {
       pages: [{ data: [], cursor: null }],
       pageParams: [undefined],
     });
