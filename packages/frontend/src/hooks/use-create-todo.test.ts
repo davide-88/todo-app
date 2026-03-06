@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, waitFor, act } from "@testing-library/react";
 import { createApiFetchMock, makeQueryClient, makeWrapper, QUERY_KEY } from "@/test-utils/mock-api.js";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useCreateTodo } from "./use-create-todo.js";
 
 vi.mock("@/lib/api-fetch.js", () => createApiFetchMock());
@@ -30,7 +30,7 @@ describe("useCreateTodo", () => {
 
     const setTodoState = vi.fn();
     const clearTodoState = vi.fn();
-    mockApiFetch.mockReturnValue(new Promise(() => {}));
+    mockApiFetch.mockReturnValue(new Promise(() => { }));
 
     const { result } = renderHook(
       () => useCreateTodo({ setTodoState, clearTodoState }),
@@ -58,7 +58,7 @@ describe("useCreateTodo", () => {
 
     const setTodoState = vi.fn();
     const clearTodoState = vi.fn();
-    mockApiFetch.mockReturnValue(new Promise(() => {}));
+    mockApiFetch.mockReturnValue(new Promise(() => { }));
 
     const { result } = renderHook(
       () => useCreateTodo({ setTodoState, clearTodoState }),

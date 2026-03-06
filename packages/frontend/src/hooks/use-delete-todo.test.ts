@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, waitFor, act } from "@testing-library/react";
-import { createApiFetchMock, makeQueryClient, makeWrapper, makeTodo, QUERY_KEY } from "@/test-utils/mock-api.js";
+import { createApiFetchMock, makeQueryClient, makeTodo, makeWrapper, QUERY_KEY } from "@/test-utils/mock-api.js";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useDeleteTodo } from "./use-delete-todo.js";
 
 vi.mock("@/lib/api-fetch.js", () => createApiFetchMock());
@@ -30,7 +30,7 @@ describe("useDeleteTodo", () => {
     });
 
     const callbacks = makeCallbacks();
-    mockApiFetch.mockReturnValue(new Promise(() => {}));
+    mockApiFetch.mockReturnValue(new Promise(() => { }));
 
     const { result } = renderHook(
       () => useDeleteTodo(callbacks),

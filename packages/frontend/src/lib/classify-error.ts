@@ -1,6 +1,6 @@
+import type { PendingOperation } from "@/hooks/use-todo-states.js";
 import { ApiFetchError } from "@/lib/api-fetch.js";
 import type { Todo, TodoUiState } from "@todo-app/shared";
-import type { PendingOperation } from "@/hooks/use-todo-states.js";
 
 export type TodoPage = { data: Todo[]; cursor: string | null };
 export type TodoInfiniteData = { pages: TodoPage[]; pageParams: unknown[] };

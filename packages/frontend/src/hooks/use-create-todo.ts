@@ -1,8 +1,8 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api-fetch.js";
-import { classifyError } from "@/lib/classify-error.js";
 import type { TodoInfiniteData, TodoMutationCallbacks } from "@/lib/classify-error.js";
-import type { Todo, CreateTodo } from "@todo-app/shared";
+import { classifyError } from "@/lib/classify-error.js";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { CreateTodo, Todo } from "@todo-app/shared";
 
 export function useCreateTodo({ setTodoState, clearTodoState }: TodoMutationCallbacks) {
   const queryClient = useQueryClient();
@@ -31,6 +31,9 @@ export function useCreateTodo({ setTodoState, clearTodoState }: TodoMutationCall
         { queryKey: ["todos"] },
         (old) => {
           if (!old || !old.pages[0]) return old;
+          // On retry, the optimistic todo is already in the cache — skip insert
+          const alreadyExists = old.pages.some((p) => p.data.some((t) => t.id === input.id));
+          if (alreadyExists) return old;
           const firstPage = old.pages[0];
           // Remove existing entry with same ID across all pages (handles retry after error)
           const filtered = old.pages.map((page) => ({
