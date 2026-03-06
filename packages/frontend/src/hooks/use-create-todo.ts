@@ -32,16 +32,24 @@ export function useCreateTodo({ setTodoState, clearTodoState }: TodoMutationCall
         (old) => {
           if (!old || !old.pages[0]) return old;
           const firstPage = old.pages[0];
-          const newPages = [...old.pages];
-          newPages[0] = {
+          // Remove existing entry with same ID across all pages (handles retry after error)
+          const filtered = old.pages.map((page) => ({
+            ...page,
+            data: page.data.filter((t) => t.id !== input.id),
+          }));
+          filtered[0] = {
             ...firstPage,
-            data: [optimisticTodo, ...firstPage.data],
+            data: [optimisticTodo, ...firstPage.data.filter((t) => t.id !== input.id)],
           };
-          return { ...old, pages: newPages };
+          return { ...old, pages: filtered };
         },
       );
 
-      setTodoState(input.id, { state: "syncing" });
+      setTodoState(input.id, {
+        state: "syncing",
+        wasConfirmed: false,
+        pendingOperation: { type: "create", args: { id: input.id, text: input.text } },
+      });
 
       return { previousData, todoId: input.id };
     },
@@ -53,7 +61,11 @@ export function useCreateTodo({ setTodoState, clearTodoState }: TodoMutationCall
     onError: (error, input) => {
       // CRITICAL: DO NOT rollback — keep optimistic todo visible for retry/delete (AC 3)
       // CRITICAL: DO NOT invalidate — refetch would remove local-only optimistic todo
-      setTodoState(input.id, classifyError(error));
+      setTodoState(input.id, {
+        ...classifyError(error),
+        wasConfirmed: false,
+        pendingOperation: { type: "create", args: { id: input.id, text: input.text } },
+      });
     },
   });
 }

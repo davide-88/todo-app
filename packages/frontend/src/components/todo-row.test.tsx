@@ -146,6 +146,46 @@ describe("TodoRow", () => {
     expect(errorEl?.textContent).toBe("Server error");
   });
 
+  it("transient-error without onRetry: no retry button shown", () => {
+    render(
+      <TodoRow
+        todo={baseTodo}
+        state="transient-error"
+        onToggle={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+    expect(screen.queryByLabelText("Retry todo: Buy groceries")).toBeNull();
+    expect(screen.getByLabelText("Delete todo: Buy groceries")).toBeInTheDocument();
+  });
+
+  it("error row: delete button always visible (no hover-only class)", () => {
+    render(
+      <TodoRow
+        todo={baseTodo}
+        state="transient-error"
+        onToggle={vi.fn()}
+        onDelete={vi.fn()}
+        onRetry={vi.fn()}
+      />,
+    );
+    const deleteBtn = screen.getByLabelText("Delete todo: Buy groceries");
+    expect(deleteBtn.className).not.toMatch(/md:opacity-0/);
+  });
+
+  it("normal row: delete button has hover-reveal class on desktop", () => {
+    render(
+      <TodoRow
+        todo={baseTodo}
+        state="confirmed"
+        onToggle={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+    const deleteBtn = screen.getByLabelText("Delete todo: Buy groceries");
+    expect(deleteBtn.className).toMatch(/md:opacity-0/);
+  });
+
   it("error message renders below the row content, not inline", () => {
     const { container } = render(
       <TodoRow

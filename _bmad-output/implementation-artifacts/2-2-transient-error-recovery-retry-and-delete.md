@@ -1,6 +1,6 @@
 # Story 2.2: Transient Error Recovery — Retry & Delete
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -42,46 +42,46 @@ so that I don't lose my data due to temporary connectivity issues.
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1 — Add `wasConfirmed` tracking to `useTodoStates`** (AC: 5, 6)
-  - [ ] Extend `TodoStateEntry` to track `wasConfirmed: boolean` (default false on new todos)
-  - [ ] Set `wasConfirmed: true` when todo transitions to syncing→confirmed successfully
-  - [ ] Preserve `wasConfirmed` through error state transitions (e.g., syncing→transient-error keeps wasConfirmed=true)
-  - [ ] Test that wasConfirmed persists across state transitions
+- [x] **Task 1 — Add `wasConfirmed` tracking to `useTodoStates`** (AC: 5, 6)
+  - [x] Extend `TodoStateEntry` to track `wasConfirmed: boolean` (default false on new todos)
+  - [x] Set `wasConfirmed: true` when todo transitions to syncing→confirmed successfully
+  - [x] Preserve `wasConfirmed` through error state transitions (e.g., syncing→transient-error keeps wasConfirmed=true)
+  - [x] Test that wasConfirmed persists across state transitions
 
-- [ ] **Task 2 — Update `useDeleteTodo` to check `wasConfirmed`** (AC: 5, 6)
-  - [ ] In `useDeleteTodo` mutation setup, check if `wasConfirmed` is true before making DELETE request
-  - [ ] If `wasConfirmed=false` (never confirmed): skip DELETE request, just call `clearTodoState`
-  - [ ] If `wasConfirmed=true` (previously confirmed): proceed with DELETE request (existing behavior)
-  - [ ] Test both paths: unconfirmed error delete (no server call) and confirmed error delete (with server call)
+- [x] **Task 2 — Update `useDeleteTodo` to check `wasConfirmed`** (AC: 5, 6)
+  - [x] In `useDeleteTodo` mutation setup, check if `wasConfirmed` is true before making DELETE request
+  - [x] If `wasConfirmed=false` (never confirmed): skip DELETE request, just call `clearTodoState`
+  - [x] If `wasConfirmed=true` (previously confirmed): proceed with DELETE request (existing behavior)
+  - [x] Test both paths: unconfirmed error delete (no server call) and confirmed error delete (with server call)
 
-- [ ] **Task 3 — Ensure retry button always visible on transient error** (AC: 1)
-  - [ ] Verify `TodoRow` renders retry button (↻) when `state === "transient-error"` and `onRetry` is provided
-  - [ ] Verify delete button (×) always visible on error rows (regardless of hover state)
-  - [ ] Mobile: buttons always visible (no hover-reveal on mobile)
-  - [ ] Desktop: error rows show retry + delete always-visible, normal rows show delete only on hover
-  - [ ] Test visual states in isolation and in list context
+- [x] **Task 3 — Ensure retry button always visible on transient error** (AC: 1)
+  - [x] Verify `TodoRow` renders retry button (↻) when `state === "transient-error"` and `onRetry` is provided
+  - [x] Verify delete button (×) always visible on error rows (regardless of hover state)
+  - [x] Mobile: buttons always visible (no hover-reveal on mobile)
+  - [x] Desktop: error rows show retry + delete always-visible, normal rows show delete only on hover
+  - [x] Test visual states in isolation and in list context
 
-- [ ] **Task 4 — Test retry flow end-to-end** (AC: 2, 3, 4)
-  - [ ] **AC 2 test:** Click retry on transient-error → mutation fires with same UUID → row enters syncing state
-  - [ ] **AC 3 test:** Retry succeeds (200/201) → syncing→confirmed transition, row becomes interactive
-  - [ ] **AC 4 test:** Retry fails (5xx) → syncing→transient-error transition, retry button reappears
-  - [ ] **Error recovery sequence:** Create → fails (transient) → click retry → succeeds → confirmed
-  - [ ] **Repeated retries:** Retry fails multiple times → error persists, user can keep retrying
-  - [ ] **Concurrent retries:** Multiple todos in transient-error, retry one → others unaffected
-  - [ ] Test with mocked network (abort) and mocked API (5xx) failures
+- [x] **Task 4 — Test retry flow end-to-end** (AC: 2, 3, 4)
+  - [x] **AC 2 test:** Click retry on transient-error → mutation fires with same UUID → row enters syncing state
+  - [x] **AC 3 test:** Retry succeeds (200/201) → syncing→confirmed transition, row becomes interactive
+  - [x] **AC 4 test:** Retry fails (5xx) → syncing→transient-error transition, retry button reappears
+  - [x] **Error recovery sequence:** Create → fails (transient) → click retry → succeeds → confirmed
+  - [x] **Repeated retries:** Retry fails multiple times → error persists, user can keep retrying
+  - [x] **Concurrent retries:** Multiple todos in transient-error, retry one → others unaffected
+  - [x] Test with mocked network (abort) and mocked API (5xx) failures
 
-- [ ] **Task 5 — Test delete-on-error behavior (confirmed vs unconfirmed)** (AC: 5, 6)
-  - [ ] **AC 5 path:** Create todo → fails immediately (never confirmed) → click delete → row removed, no DELETE request
-  - [ ] **AC 6 path:** Create → succeeds (confirmed) → toggle fails (transient-error, wasConfirmed=true) → click delete → DELETE request sent, row optimistically removed
-  - [ ] Test: DELETE request completes successfully → list updated
-  - [ ] Test: DELETE request fails → error handling (row remains, error state updated)
-  - [ ] Verify mutation cache invalidation after delete
+- [x] **Task 5 — Test delete-on-error behavior (confirmed vs unconfirmed)** (AC: 5, 6)
+  - [x] **AC 5 path:** Create todo → fails immediately (never confirmed) → click delete → row removed, no DELETE request
+  - [x] **AC 6 path:** Create → succeeds (confirmed) → toggle fails (transient-error, wasConfirmed=true) → click delete → DELETE request sent, row optimistically removed
+  - [x] Test: DELETE request completes successfully → list updated
+  - [x] Test: DELETE request fails → error handling (row remains, error state updated)
+  - [x] Verify mutation cache invalidation after delete
 
-- [ ] **Task 6 — Verify** (AC: all)
-  - [ ] `pnpm --filter @todo-app/frontend typecheck` passes with 0 errors
-  - [ ] `pnpm lint` passes with 0 errors
-  - [ ] `pnpm --filter @todo-app/frontend test` — all unit tests green
-  - [ ] `pnpm --filter @todo-app/shared test` — all shared tests green
+- [x] **Task 6 — Verify** (AC: all)
+  - [x] `pnpm --filter @todo-app/frontend typecheck` passes with 0 errors
+  - [x] `pnpm lint` passes with 0 errors
+  - [x] `pnpm --filter @todo-app/frontend test` — all unit tests green
+  - [x] `pnpm --filter @todo-app/shared test` — all shared tests green
 
 ## Dev Notes
 
@@ -120,16 +120,14 @@ const newEntry: TodoStateEntry = {
   pendingOperation: { type: "create", args: { id, text } },
 };
 
-// Set to true when mutation succeeds
-setTodoState(id, {
-  state: "confirmed",
-  wasConfirmed: true, // Promoted to confirmed
-});
+// On success: clear state entirely (getTodoState defaults to "confirmed" for unknown IDs)
+clearTodoState(id);
 
-// Preserve wasConfirmed through error transitions
+// Preserve wasConfirmed through error transitions (setTodoState auto-preserves if omitted)
 setTodoState(id, {
   ...classifyError(error),
-  wasConfirmed: getTodoStateEntry(id)?.wasConfirmed ?? false, // Keep existing
+  wasConfirmed: true, // or false for create — explicitly set per hook
+  pendingOperation: { type: "toggle", args: { id, completed } },
 });
 ```
 
@@ -206,7 +204,7 @@ packages/frontend/src/
   components/
     todo-row.tsx                    ← NO CHANGE (retry button already visible)
     todo-row.test.tsx               ← MODIFY (test error row button visibility)
-  app.tsx                           ← NO CHANGE (handleRetry already wired)
+  app.tsx                           ← MODIFY (wire handleRetry, handleDelete via wrapper, pass onRetry)
 ```
 
 ### Testing Strategy
@@ -294,16 +292,46 @@ packages/frontend/src/
 
 ### Agent Model Used
 
-Claude Haiku 4.5
+Claude Sonnet 4.6
 
 ### Debug Log References
 
-(To be filled after implementation)
+- Story 2.1 was listed as `backlog` in sprint-status but its visual/classification work (classifyError, TodoRow retry button, apiFetch) was already implemented. The `pendingOperation` and `handleRetry` wiring described as "done in 2.1" were NOT present and were implemented here.
+- `useDeleteTodo` `handleDelete` exposes a named wrapper (not replacing `mutate`) to preserve backwards-compatible internal mutation access for retry-of-delete use case in `handleRetry`.
 
 ### Completion Notes
 
-(To be filled after implementation)
+- Added `PendingOperation` union type and `wasConfirmed: boolean` to `TodoStateEntry` in `use-todo-states.ts`; added `getTodoStateEntry` getter
+- Updated `TodoMutationCallbacks.setTodoState` in `classify-error.ts` to accept optional `wasConfirmed` and `pendingOperation` fields
+- `useCreateTodo`: onMutate sets `wasConfirmed: false` + `pendingOperation`; onError preserves both
+- `useToggleTodo`: onMutate sets `wasConfirmed: true` + `pendingOperation`; onError preserves both
+- `useDeleteTodo`: onMutate sets `wasConfirmed: true` + `pendingOperation`; onError preserves both; new `handleDelete` wrapper checks `wasConfirmed` before firing DELETE
+- `app.tsx`: wired `handleRetry` (reads `pendingOperation`, re-invokes correct mutation), `handleDelete` now calls `deleteMutation.handleDelete`, `onRetry={handleRetry}` passed to TodoList
+- All 6 ACs satisfied; 132 frontend tests + 58 shared tests pass; typecheck and lint clean
 
 ### File List
 
-(To be filled after implementation)
+- `packages/frontend/src/hooks/use-todo-states.ts`
+- `packages/frontend/src/hooks/use-todo-states.test.ts`
+- `packages/frontend/src/hooks/use-delete-todo.ts`
+- `packages/frontend/src/hooks/use-delete-todo.test.ts`
+- `packages/frontend/src/hooks/use-toggle-todo.ts`
+- `packages/frontend/src/hooks/use-toggle-todo.test.ts`
+- `packages/frontend/src/hooks/use-create-todo.ts`
+- `packages/frontend/src/hooks/use-create-todo.test.ts`
+- `packages/frontend/src/components/todo-row.test.tsx`
+- `packages/frontend/src/lib/classify-error.ts`
+- `packages/frontend/src/app.tsx`
+- `_bmad-output/implementation-artifacts/sprint-status.yaml`
+
+## Change Log
+
+- 2026-03-06: Implemented Story 2.2 — transient error recovery (retry & delete). Added wasConfirmed tracking, pendingOperation storage, handleRetry wiring, and conditional DELETE logic.
+- 2026-03-06: **Code Review (Claude Opus 4.6)** — Found 7 issues (1 Critical, 2 High, 2 Medium, 2 Low). Fixed 5:
+  - [CRITICAL] AC 5 violation: unconfirmed delete now removes optimistic entry from query cache (was ghost row bug)
+  - [HIGH] handleRetry for delete now routes through handleDelete wrapper (wasConfirmed safety check)
+  - [MEDIUM] setTodoState preserves previous wasConfirmed when not explicitly provided
+  - [MEDIUM] classifyError now includes errorMessage for transient errors (diagnostic info)
+  - [LOW] Fixed story "Files to Modify" section: app.tsx correctly listed as MODIFY
+  - [LOW] Fixed Dev Notes code sample: success path uses clearTodoState (not setTodoState with wasConfirmed: true)
+  - 134 frontend + 58 shared tests pass.
