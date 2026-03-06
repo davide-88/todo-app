@@ -50,7 +50,7 @@ development_status:
   epic-1-retrospective: done
 
   # ─── Epic 2: Error Handling & Recovery ────────────────────────────────────────
-  epic-2: in-progress
+  epic-2: done
   2-1-error-type-classification-and-visual-states: done
   2-2-transient-error-recovery-retry-and-delete: done
   2-3-permanent-error-display-message-and-delete: done
