@@ -2,6 +2,8 @@ import { createApiFetchMock, makeQueryClient, makeTodo, makeWrapper, QUERY_KEY }
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useDeleteTodo } from "./use-delete-todo.js";
+import { useCreateTodo } from "./use-create-todo.js";
+import { useTodoStates } from "./use-todo-states.js";
 
 vi.mock("@/lib/api-fetch.js", () => createApiFetchMock());
 
@@ -309,5 +311,103 @@ describe("useDeleteTodo", () => {
       wasConfirmed: true,
       pendingOperation: { type: "delete", args: { id: "a" } },
     });
+  });
+});
+
+describe("useDeleteTodo integration with useTodoStates", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("permanent-error create (400) -> delete -> no fetch call, row removed, state cleared", async () => {
+    const queryClient = makeQueryClient();
+    queryClient.setQueryData(QUERY_KEY, {
+      pages: [{ data: [], cursor: null }],
+      pageParams: [undefined],
+    });
+
+    mockApiFetch.mockRejectedValueOnce(
+      new ApiFetchError("VALIDATION_ERROR", "Text exceeds maximum length", undefined, 400),
+    );
+
+    const { result } = renderHook(
+      () => {
+        const { setTodoState, clearTodoState, getTodoStateEntry, getTodoState } = useTodoStates();
+        const createMutation = useCreateTodo({ setTodoState, clearTodoState });
+        const deleteMutation = useDeleteTodo({ setTodoState, clearTodoState, getTodoStateEntry });
+        return { createMutation, deleteMutation, getTodoState };
+      },
+      { wrapper: makeWrapper(queryClient) },
+    );
+
+    act(() => {
+      result.current.createMutation.mutate({ id: "failed-id", text: "Too long text" });
+    });
+
+    await waitFor(() => expect(result.current.createMutation.isError).toBe(true));
+
+    const dataBefore = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
+    expect(dataBefore?.pages[0]?.data.some((t) => t.id === "failed-id")).toBe(true);
+
+    const fetchCallsBefore = mockApiFetch.mock.calls.length;
+
+    act(() => {
+      result.current.deleteMutation.handleDelete("failed-id");
+    });
+
+    expect(mockApiFetch).toHaveBeenCalledTimes(fetchCallsBefore);
+
+    const dataAfter = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
+    expect(dataAfter?.pages[0]?.data.some((t) => t.id === "failed-id")).toBe(false);
+    // Verify state map is cleared — no stale permanent-error entry
+    expect(result.current.getTodoState("failed-id")).toBe("confirmed");
+  });
+
+  it("delete-and-recreate: create fails (400) -> delete -> create new with valid text -> confirmed", async () => {
+    const queryClient = makeQueryClient();
+    queryClient.setQueryData(QUERY_KEY, {
+      pages: [{ data: [], cursor: null }],
+      pageParams: [undefined],
+    });
+
+    mockApiFetch.mockRejectedValueOnce(
+      new ApiFetchError("VALIDATION_ERROR", "Text exceeds maximum length", undefined, 400),
+    );
+
+    const { result } = renderHook(
+      () => {
+        const { setTodoState, clearTodoState, getTodoState, getTodoStateEntry } = useTodoStates();
+        const createMutation = useCreateTodo({ setTodoState, clearTodoState });
+        const deleteMutation = useDeleteTodo({ setTodoState, clearTodoState, getTodoStateEntry });
+        return { createMutation, deleteMutation, getTodoState };
+      },
+      { wrapper: makeWrapper(queryClient) },
+    );
+
+    // Step 1: create "id-1" -> 400 permanent-error
+    act(() => {
+      result.current.createMutation.mutate({ id: "id-1", text: "Too long text" });
+    });
+    await waitFor(() => expect(result.current.createMutation.isError).toBe(true));
+    expect(result.current.getTodoState("id-1")).toBe("permanent-error");
+
+    // Step 2: delete "id-1" (wasConfirmed=false -> no server call)
+    act(() => {
+      result.current.deleteMutation.handleDelete("id-1");
+    });
+    const dataAfterDelete = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
+    expect(dataAfterDelete?.pages[0]?.data.some((t) => t.id === "id-1")).toBe(false);
+
+    // Step 3: create "id-2" (fresh UUID) with valid text -> 201
+    mockApiFetch.mockResolvedValueOnce(makeTodo("id-2"));
+    act(() => {
+      result.current.createMutation.mutate({ id: "id-2", text: "Valid text" });
+    });
+    await waitFor(() => expect(result.current.getTodoState("id-2")).toBe("confirmed"));
+
+    const finalData = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
+    const allIds = finalData?.pages.flatMap((p) => p.data).map((t) => t.id) ?? [];
+    expect(allIds).toContain("id-2");
+    expect(allIds).not.toContain("id-1");
   });
 });

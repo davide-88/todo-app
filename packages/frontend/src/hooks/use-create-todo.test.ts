@@ -2,6 +2,7 @@ import { createApiFetchMock, makeQueryClient, makeWrapper, QUERY_KEY } from "@/t
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useCreateTodo } from "./use-create-todo.js";
+import { useTodoStates } from "./use-todo-states.js";
 
 vi.mock("@/lib/api-fetch.js", () => createApiFetchMock());
 
@@ -387,6 +388,37 @@ describe("useCreateTodo", () => {
         expect(clearTodoState).toHaveBeenCalledWith(`id-${i}`);
       }
     });
+  });
+
+  it("integration: 400 VALIDATION_ERROR -> useTodoStates stores permanent-error + errorMessage", async () => {
+    const queryClient = makeQueryClient();
+    queryClient.setQueryData(QUERY_KEY, {
+      pages: [{ data: [], cursor: null }],
+      pageParams: [undefined],
+    });
+
+    mockApiFetch.mockRejectedValueOnce(
+      new ApiFetchError("VALIDATION_ERROR", "Text exceeds maximum length", undefined, 400),
+    );
+
+    const { result } = renderHook(
+      () => {
+        const { setTodoState, clearTodoState, getTodoState, getErrorMessage, getTodoStateEntry } = useTodoStates();
+        const mutation = useCreateTodo({ setTodoState, clearTodoState });
+        return { mutation, getTodoState, getErrorMessage, getTodoStateEntry };
+      },
+      { wrapper: makeWrapper(queryClient) },
+    );
+
+    act(() => {
+      result.current.mutation.mutate({ id: "new-id", text: "A long todo text" });
+    });
+
+    await waitFor(() => expect(result.current.mutation.isError).toBe(true));
+
+    expect(result.current.getTodoState("new-id")).toBe("permanent-error");
+    expect(result.current.getErrorMessage("new-id")).toBe("Text exceeds maximum length");
+    expect(result.current.getTodoStateEntry("new-id")?.wasConfirmed).toBe(false);
   });
 
   it("retry after failure does not duplicate the optimistic todo in cache", async () => {

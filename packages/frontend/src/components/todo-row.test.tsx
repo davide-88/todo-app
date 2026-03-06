@@ -186,8 +186,37 @@ describe("TodoRow", () => {
     expect(deleteBtn.className).toMatch(/md:opacity-0/);
   });
 
+  it("permanent-error without errorMessage: no ErrorMessage rendered, no aria-describedby", () => {
+    render(
+      <TodoRow
+        todo={baseTodo}
+        state="permanent-error"
+        onToggle={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+    const listitem = screen.getByRole("listitem");
+    expect(listitem).not.toHaveAttribute("aria-describedby");
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("permanent-error with onRetry prop: retry button still NOT rendered", () => {
+    render(
+      <TodoRow
+        todo={baseTodo}
+        state="permanent-error"
+        errorMessage="Server error"
+        onToggle={vi.fn()}
+        onDelete={vi.fn()}
+        onRetry={vi.fn()}
+      />,
+    );
+    expect(screen.queryByLabelText("Retry todo: Buy groceries")).toBeNull();
+    expect(screen.getByLabelText("Delete todo: Buy groceries")).toBeInTheDocument();
+  });
+
   it("error message renders below the row content, not inline", () => {
-    const { container } = render(
+    render(
       <TodoRow
         todo={baseTodo}
         state="permanent-error"
@@ -196,10 +225,13 @@ describe("TodoRow", () => {
         onDelete={vi.fn()}
       />,
     );
-    const listitem = container.querySelector("[role='listitem']")!;
-    const flexRow = listitem.children[0];
-    const errorMsg = listitem.children[1];
-    expect(flexRow?.className).toMatch(/flex/);
-    expect(errorMsg?.getAttribute("role")).toBe("alert");
+    const listitem = screen.getByRole("listitem");
+    const alert = screen.getByRole("alert");
+    // Alert is a direct child of the listitem, not nested inside the flex row
+    expect(alert.parentElement).toBe(listitem);
+    // The flex row (first child) precedes the alert (second child)
+    const flexRow = listitem.firstElementChild!;
+    expect(flexRow).not.toBe(alert);
+    expect(flexRow.className).toMatch(/flex/);
   });
 });
