@@ -7,10 +7,6 @@ type DeleteTodoCallbacks = TodoMutationCallbacks & {
   getTodoStateEntry: (id: string) => { wasConfirmed: boolean } | undefined;
 };
 
-type DeleteTodoCallbacks = TodoMutationCallbacks & {
-  getTodoStateEntry: (id: string) => { wasConfirmed: boolean } | undefined;
-};
-
 export function useDeleteTodo({ setTodoState, clearTodoState, getTodoStateEntry }: DeleteTodoCallbacks) {
   const queryClient = useQueryClient();
 

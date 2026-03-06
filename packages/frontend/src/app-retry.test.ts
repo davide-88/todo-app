@@ -1,15 +1,18 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, waitFor, act } from "@testing-library/react";
-import { useQueryClient } from "@tanstack/react-query";
-import { createApiFetchMock, makeQueryClient, makeWrapper, makeTodo, QUERY_KEY } from "@/test-utils/mock-api.js";
 import { useCreateTodo } from "@/hooks/use-create-todo.js";
-import { useToggleTodo } from "@/hooks/use-toggle-todo.js";
 import { useDeleteTodo } from "@/hooks/use-delete-todo.js";
-import { useTodoStates } from "@/hooks/use-todo-states.js";
 import type { PendingOperation } from "@/hooks/use-todo-states.js";
+import { useTodoStates } from "@/hooks/use-todo-states.js";
+import { useToggleTodo } from "@/hooks/use-toggle-todo.js";
 import type { TodoInfiniteData } from "@/lib/classify-error.js";
+import { makeQueryClient, makeTodo, makeWrapper, QUERY_KEY } from "@/test-utils/mock-api.js";
+import { useQueryClient } from "@tanstack/react-query";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("@/lib/api-fetch.js", () => createApiFetchMock());
+vi.mock("@/lib/api-fetch.js", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/api-fetch.js")>("@/lib/api-fetch.js");
+  return { ...actual, apiFetch: vi.fn() };
+});
 
 import { apiFetch, ApiFetchError } from "@/lib/api-fetch.js";
 const mockApiFetch = vi.mocked(apiFetch);
@@ -27,7 +30,7 @@ describe("handleRetry integration", () => {
     const { getTodoStateEntry, setTodoState, clearTodoState } = useTodoStates();
     const createMutation = useCreateTodo({ setTodoState, clearTodoState });
     const toggleMutation = useToggleTodo({ setTodoState, clearTodoState });
-    const deleteMutation = useDeleteTodo({ setTodoState, clearTodoState });
+    const deleteMutation = useDeleteTodo({ setTodoState, clearTodoState, getTodoStateEntry });
 
     const handleRetry = (id: string) => {
       const entry = getTodoStateEntry(id);

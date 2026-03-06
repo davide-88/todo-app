@@ -67,6 +67,6 @@ describe("classifyError", () => {
 
   it("classifies TIMEOUT error as transient-error", () => {
     const error = new ApiFetchError("TIMEOUT", "Request timed out", undefined, 0);
-    expect(classifyError(error)).toEqual({ state: "transient-error" });
+    expect(classifyError(error)).toEqual({ state: "transient-error", errorMessage: "Request timed out" });
   });
 });
