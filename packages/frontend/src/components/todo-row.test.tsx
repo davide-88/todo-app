@@ -216,7 +216,7 @@ describe("TodoRow", () => {
   });
 
   it("error message renders below the row content, not inline", () => {
-    const { container } = render(
+    render(
       <TodoRow
         todo={baseTodo}
         state="permanent-error"
@@ -225,10 +225,13 @@ describe("TodoRow", () => {
         onDelete={vi.fn()}
       />,
     );
-    const listitem = container.querySelector("[role='listitem']")!;
-    const flexRow = listitem.children[0];
-    const errorMsg = listitem.children[1];
-    expect(flexRow?.className).toMatch(/flex/);
-    expect(errorMsg?.getAttribute("role")).toBe("alert");
+    const listitem = screen.getByRole("listitem");
+    const alert = screen.getByRole("alert");
+    // Alert is a direct child of the listitem, not nested inside the flex row
+    expect(alert.parentElement).toBe(listitem);
+    // The flex row (first child) precedes the alert (second child)
+    const flexRow = listitem.firstElementChild!;
+    expect(flexRow).not.toBe(alert);
+    expect(flexRow.className).toMatch(/flex/);
   });
 });

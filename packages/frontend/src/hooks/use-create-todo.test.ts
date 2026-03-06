@@ -403,9 +403,9 @@ describe("useCreateTodo", () => {
 
     const { result } = renderHook(
       () => {
-        const { setTodoState, clearTodoState, getTodoState, getErrorMessage } = useTodoStates();
+        const { setTodoState, clearTodoState, getTodoState, getErrorMessage, getTodoStateEntry } = useTodoStates();
         const mutation = useCreateTodo({ setTodoState, clearTodoState });
-        return { mutation, getTodoState, getErrorMessage };
+        return { mutation, getTodoState, getErrorMessage, getTodoStateEntry };
       },
       { wrapper: makeWrapper(queryClient) },
     );
@@ -418,6 +418,7 @@ describe("useCreateTodo", () => {
 
     expect(result.current.getTodoState("new-id")).toBe("permanent-error");
     expect(result.current.getErrorMessage("new-id")).toBe("Text exceeds maximum length");
+    expect(result.current.getTodoStateEntry("new-id")?.wasConfirmed).toBe(false);
   });
 
   it("retry after failure does not duplicate the optimistic todo in cache", async () => {

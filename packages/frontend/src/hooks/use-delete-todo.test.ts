@@ -332,10 +332,10 @@ describe("useDeleteTodo integration with useTodoStates", () => {
 
     const { result } = renderHook(
       () => {
-        const { setTodoState, clearTodoState, getTodoStateEntry } = useTodoStates();
+        const { setTodoState, clearTodoState, getTodoStateEntry, getTodoState } = useTodoStates();
         const createMutation = useCreateTodo({ setTodoState, clearTodoState });
         const deleteMutation = useDeleteTodo({ setTodoState, clearTodoState, getTodoStateEntry });
-        return { createMutation, deleteMutation };
+        return { createMutation, deleteMutation, getTodoState };
       },
       { wrapper: makeWrapper(queryClient) },
     );
@@ -359,6 +359,8 @@ describe("useDeleteTodo integration with useTodoStates", () => {
 
     const dataAfter = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
     expect(dataAfter?.pages[0]?.data.some((t) => t.id === "failed-id")).toBe(false);
+    // Verify state map is cleared — no stale permanent-error entry
+    expect(result.current.getTodoState("failed-id")).toBe("confirmed");
   });
 
   it("delete-and-recreate: create fails (400) -> delete -> create new with valid text -> confirmed", async () => {

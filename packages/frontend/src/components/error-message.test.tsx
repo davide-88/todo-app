@@ -23,7 +23,6 @@ describe("ErrorMessage", () => {
   it("applies text-[13px] and text-destructive classes", () => {
     render(<ErrorMessage state="permanent-error" message="Some error" />);
     const alert = screen.getByRole("alert");
-    expect(alert.className).toContain("text-[13px]");
-    expect(alert.className).toContain("text-destructive");
+    expect(alert).toHaveClass("text-[13px]", "text-destructive");
   });
 });

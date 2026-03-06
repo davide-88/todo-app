@@ -1,6 +1,6 @@
 # Story 2.3: Permanent Error Display — Message & Delete
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -225,7 +225,7 @@ claude-sonnet-4-6
 ### Completion Notes List
 
 - All 6 tasks completed. Implementation was already in place from Stories 2.1 and 2.2.
-- Added 7 new tests across 4 files; frontend test count grew from 134 → 141 (all passing).
+- Added 6 new tests across 4 files; frontend test count grew from 135 → 141 (all passing).
 - New tests added:
   - `use-create-todo.test.ts`: integration test wiring `useTodoStates` + `useCreateTodo` — verifies 400 VALIDATION_ERROR stores `permanent-error` state and `errorMessage` via real state hooks.
   - `todo-row.test.tsx`: permanent-error without `errorMessage` → no `ErrorMessage` rendered and no `aria-describedby`; permanent-error with `onRetry` prop → retry button still NOT rendered.
@@ -242,4 +242,5 @@ packages/frontend/src/components/error-message.test.tsx
 
 ## Change Log
 
-- 2026-03-06: Added 7 new tests covering permanent error display, delete, and recreate flows (Story 2.3). No production code changes. Frontend: 134 → 141 tests passing.
+- 2026-03-06: Added 6 new tests covering permanent error display, delete, and recreate flows (Story 2.3). No production code changes. Frontend: 135 → 141 tests passing.
+- 2026-03-06: Code review fixes — added wasConfirmed assertion to create integration test, added state-cleared assertion to delete integration test, corrected test count in notes.
