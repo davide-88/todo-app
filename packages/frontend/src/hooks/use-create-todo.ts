@@ -1,8 +1,8 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api-fetch.js";
-import { classifyError } from "@/lib/classify-error.js";
 import type { TodoInfiniteData, TodoMutationCallbacks } from "@/lib/classify-error.js";
-import type { Todo, CreateTodo } from "@todo-app/shared";
+import { classifyError } from "@/lib/classify-error.js";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import type { CreateTodo, Todo } from "@todo-app/shared";
 
 export function useCreateTodo({ setTodoState, clearTodoState }: TodoMutationCallbacks) {
   const queryClient = useQueryClient();
@@ -35,16 +35,24 @@ export function useCreateTodo({ setTodoState, clearTodoState }: TodoMutationCall
           const alreadyExists = old.pages.some((p) => p.data.some((t) => t.id === input.id));
           if (alreadyExists) return old;
           const firstPage = old.pages[0];
-          const newPages = [...old.pages];
-          newPages[0] = {
+          // Remove existing entry with same ID across all pages (handles retry after error)
+          const filtered = old.pages.map((page) => ({
+            ...page,
+            data: page.data.filter((t) => t.id !== input.id),
+          }));
+          filtered[0] = {
             ...firstPage,
-            data: [optimisticTodo, ...firstPage.data],
+            data: [optimisticTodo, ...firstPage.data.filter((t) => t.id !== input.id)],
           };
-          return { ...old, pages: newPages };
+          return { ...old, pages: filtered };
         },
       );
 
-      setTodoState(input.id, { state: "syncing" });
+      setTodoState(input.id, {
+        state: "syncing",
+        wasConfirmed: false,
+        pendingOperation: { type: "create", args: { id: input.id, text: input.text } },
+      });
 
       return { previousData, todoId: input.id };
     },
@@ -56,13 +64,10 @@ export function useCreateTodo({ setTodoState, clearTodoState }: TodoMutationCall
     onError: (error, input) => {
       // CRITICAL: DO NOT rollback — keep optimistic todo visible for retry/delete (AC 3)
       // CRITICAL: DO NOT invalidate — refetch would remove local-only optimistic todo
-      const classified = classifyError(error);
       setTodoState(input.id, {
-        ...classified,
-        pendingOperation: {
-          type: "create",
-          args: { id: input.id, text: input.text },
-        },
+        ...classifyError(error),
+        wasConfirmed: false,
+        pendingOperation: { type: "create", args: { id: input.id, text: input.text } },
       });
     },
   });

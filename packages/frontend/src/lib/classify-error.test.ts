@@ -39,26 +39,29 @@ describe("classifyError", () => {
     });
   });
 
-  it("classifies status 500 as transient-error", () => {
+  it("classifies status 500 as transient-error with message", () => {
     const error = new ApiFetchError("INTERNAL_ERROR", "Server error", undefined, 500);
-    expect(classifyError(error)).toEqual({ state: "transient-error" });
+    expect(classifyError(error)).toEqual({ state: "transient-error", errorMessage: "Server error" });
   });
 
-  it("classifies status 429 as transient-error", () => {
+  it("classifies status 429 as transient-error with message", () => {
     const error = new ApiFetchError("RATE_LIMITED", "Too many requests", undefined, 429);
-    expect(classifyError(error)).toEqual({ state: "transient-error" });
+    expect(classifyError(error)).toEqual({ state: "transient-error", errorMessage: "Too many requests" });
   });
 
-  it("classifies NETWORK_ERROR code as transient-error", () => {
+  it("classifies NETWORK_ERROR code as transient-error with message", () => {
     const error = new ApiFetchError("NETWORK_ERROR", "Network request failed", undefined, 0);
-    expect(classifyError(error)).toEqual({ state: "transient-error" });
+    expect(classifyError(error)).toEqual({ state: "transient-error", errorMessage: "Network request failed" });
   });
 
-  it("defaults unknown error (not ApiFetchError) to transient-error", () => {
-    expect(classifyError(new Error("Something went wrong"))).toEqual({ state: "transient-error" });
+  it("defaults unknown Error to transient-error with message", () => {
+    expect(classifyError(new Error("Something went wrong"))).toEqual({
+      state: "transient-error",
+      errorMessage: "Something went wrong",
+    });
   });
 
-  it("defaults non-error value to transient-error", () => {
+  it("defaults non-error value to transient-error without message", () => {
     expect(classifyError("some string error")).toEqual({ state: "transient-error" });
   });
 

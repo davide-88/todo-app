@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api-fetch.js";
-import { classifyError } from "@/lib/classify-error.js";
 import type { TodoInfiniteData, TodoMutationCallbacks } from "@/lib/classify-error.js";
+import { classifyError } from "@/lib/classify-error.js";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Todo } from "@todo-app/shared";
 
 export function useToggleTodo({ setTodoState, clearTodoState }: TodoMutationCallbacks) {
@@ -31,7 +31,11 @@ export function useToggleTodo({ setTodoState, clearTodoState }: TodoMutationCall
         };
       });
 
-      setTodoState(id, { state: "syncing" });
+      setTodoState(id, {
+        state: "syncing",
+        wasConfirmed: true,
+        pendingOperation: { type: "toggle", args: { id, completed } },
+      });
       return { previousData };
     },
     onSuccess: (_data, { id }) => {
@@ -44,13 +48,10 @@ export function useToggleTodo({ setTodoState, clearTodoState }: TodoMutationCall
           if (data) queryClient.setQueryData(queryKey, data);
         }
       }
-      const classified = classifyError(error);
       setTodoState(id, {
-        ...classified,
-        pendingOperation: {
-          type: "toggle",
-          args: { id, completed },
-        },
+        ...classifyError(error),
+        wasConfirmed: true,
+        pendingOperation: { type: "toggle", args: { id, completed } },
       });
     },
   });

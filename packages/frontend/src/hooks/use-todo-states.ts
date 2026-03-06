@@ -1,4 +1,3 @@
-import { useState, useCallback } from "react";
 import type { TodoUiState } from "@todo-app/shared";
 
 export type PendingOperation =
@@ -10,13 +9,29 @@ export interface TodoStateEntry {
   state: TodoUiState;
   errorMessage?: string;
   pendingOperation?: PendingOperation;
+  wasConfirmed: boolean;
 }
+
+type SetEntryInput = {
+  state: TodoUiState;
+  errorMessage?: string;
+  wasConfirmed?: boolean;
+  pendingOperation?: PendingOperation;
+};
 
 export function useTodoStates() {
   const [stateMap, setStateMap] = useState<Map<string, TodoStateEntry>>(new Map());
 
-  const setTodoState = useCallback((id: string, entry: TodoStateEntry) => {
-    setStateMap((prev) => new Map(prev).set(id, entry));
+  const setTodoState = useCallback((id: string, entry: SetEntryInput) => {
+    setStateMap((prev) => {
+      const newEntry: TodoStateEntry = {
+        wasConfirmed: entry.wasConfirmed ?? prev.get(id)?.wasConfirmed ?? false,
+        state: entry.state,
+        errorMessage: entry.errorMessage,
+        pendingOperation: entry.pendingOperation,
+      };
+      return new Map(prev).set(id, newEntry);
+    });
   }, []);
 
   const clearTodoState = useCallback((id: string) => {

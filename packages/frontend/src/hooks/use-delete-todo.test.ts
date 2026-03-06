@@ -1,12 +1,21 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, waitFor, act } from "@testing-library/react";
-import { createApiFetchMock, makeQueryClient, makeWrapper, makeTodo, QUERY_KEY } from "@/test-utils/mock-api.js";
+import { createApiFetchMock, makeQueryClient, makeTodo, makeWrapper, QUERY_KEY } from "@/test-utils/mock-api.js";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useDeleteTodo } from "./use-delete-todo.js";
 
 vi.mock("@/lib/api-fetch.js", () => createApiFetchMock());
 
 import { apiFetch, ApiFetchError } from "@/lib/api-fetch.js";
 const mockApiFetch = vi.mocked(apiFetch);
+
+const makeCallbacks = (overrides?: { wasConfirmed?: boolean }) => ({
+  setTodoState: vi.fn(),
+  clearTodoState: vi.fn(),
+  getTodoStateEntry: vi.fn().mockReturnValue({
+    wasConfirmed: overrides?.wasConfirmed ?? true,
+    state: "transient-error",
+  }),
+});
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -20,17 +29,16 @@ describe("useDeleteTodo", () => {
       pageParams: [undefined],
     });
 
-    const setTodoState = vi.fn();
-    const clearTodoState = vi.fn();
-    mockApiFetch.mockReturnValue(new Promise(() => {}));
+    const callbacks = makeCallbacks();
+    mockApiFetch.mockReturnValue(new Promise(() => { }));
 
     const { result } = renderHook(
-      () => useDeleteTodo({ setTodoState, clearTodoState }),
+      () => useDeleteTodo(callbacks),
       { wrapper: makeWrapper(queryClient) },
     );
 
     act(() => {
-      result.current.mutate({ id: "a" });
+      result.current.handleDelete("a");
     });
 
     await waitFor(() => {
@@ -39,7 +47,10 @@ describe("useDeleteTodo", () => {
       expect(ids).not.toContain("a");
       expect(ids).toContain("b");
     });
-    expect(setTodoState).toHaveBeenCalledWith("a", { state: "syncing" });
+    expect(callbacks.setTodoState).toHaveBeenCalledWith(
+      "a",
+      expect.objectContaining({ state: "syncing", wasConfirmed: true }),
+    );
   });
 
   it("successful delete → todo stays removed, state cleared", async () => {
@@ -49,23 +60,22 @@ describe("useDeleteTodo", () => {
       pageParams: [undefined],
     });
 
-    const setTodoState = vi.fn();
-    const clearTodoState = vi.fn();
+    const callbacks = makeCallbacks();
     mockApiFetch.mockResolvedValueOnce(undefined);
 
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
     const { result } = renderHook(
-      () => useDeleteTodo({ setTodoState, clearTodoState }),
+      () => useDeleteTodo(callbacks),
       { wrapper: makeWrapper(queryClient) },
     );
 
     act(() => {
-      result.current.mutate({ id: "a" });
+      result.current.handleDelete("a");
     });
 
     await waitFor(() => {
-      expect(clearTodoState).toHaveBeenCalledWith("a");
+      expect(callbacks.clearTodoState).toHaveBeenCalledWith("a");
     });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["todos"] });
   });
@@ -77,34 +87,28 @@ describe("useDeleteTodo", () => {
       pageParams: [undefined],
     });
 
-    const setTodoState = vi.fn();
-    const clearTodoState = vi.fn();
+    const callbacks = makeCallbacks();
     mockApiFetch.mockRejectedValueOnce(
       new ApiFetchError("NETWORK_ERROR", "Network failed", undefined, 0),
     );
 
     const { result } = renderHook(
-      () => useDeleteTodo({ setTodoState, clearTodoState }),
+      () => useDeleteTodo(callbacks),
       { wrapper: makeWrapper(queryClient) },
     );
 
     act(() => {
-      result.current.mutate({ id: "a" });
+      result.current.handleDelete("a");
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
-    // Todo must reappear
     const data = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
     const ids = data?.pages[0]?.data.map((t) => t.id);
     expect(ids).toContain("a");
-    expect(setTodoState).toHaveBeenLastCalledWith(
+    expect(callbacks.setTodoState).toHaveBeenLastCalledWith(
       "a",
-      expect.objectContaining({
-        state: "transient-error",
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        pendingOperation: expect.objectContaining({ type: "delete" }),
-      }),
+      expect.objectContaining({ state: "transient-error", wasConfirmed: true }),
     );
   });
 
@@ -115,33 +119,27 @@ describe("useDeleteTodo", () => {
       pageParams: [undefined],
     });
 
-    const setTodoState = vi.fn();
-    const clearTodoState = vi.fn();
+    const callbacks = makeCallbacks();
     mockApiFetch.mockRejectedValueOnce(
       new ApiFetchError("VALIDATION_ERROR", "Permanent failure", undefined, 400),
     );
 
     const { result } = renderHook(
-      () => useDeleteTodo({ setTodoState, clearTodoState }),
+      () => useDeleteTodo(callbacks),
       { wrapper: makeWrapper(queryClient) },
     );
 
     act(() => {
-      result.current.mutate({ id: "a" });
+      result.current.handleDelete("a");
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
     const data = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
     expect(data?.pages[0]?.data.some((t) => t.id === "a")).toBe(true);
-    expect(setTodoState).toHaveBeenLastCalledWith(
+    expect(callbacks.setTodoState).toHaveBeenLastCalledWith(
       "a",
-      expect.objectContaining({
-        state: "permanent-error",
-        errorMessage: "Permanent failure",
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        pendingOperation: expect.objectContaining({ type: "delete" }),
-      }),
+      expect.objectContaining({ state: "permanent-error", errorMessage: "Permanent failure" }),
     );
   });
 
@@ -155,24 +153,22 @@ describe("useDeleteTodo", () => {
       pageParams: [undefined, "cursor-1"],
     });
 
-    const setTodoState = vi.fn();
-    const clearTodoState = vi.fn();
+    const callbacks = makeCallbacks();
     mockApiFetch.mockRejectedValueOnce(
       new ApiFetchError("NETWORK_ERROR", "Network failed", undefined, 0),
     );
 
     const { result } = renderHook(
-      () => useDeleteTodo({ setTodoState, clearTodoState }),
+      () => useDeleteTodo(callbacks),
       { wrapper: makeWrapper(queryClient) },
     );
 
     act(() => {
-      result.current.mutate({ id: "b" });
+      result.current.handleDelete("b");
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
-    // All items restored in original positions
     const data = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
     expect(data?.pages[0]?.data.map((t) => t.id)).toEqual(["a", "b", "c"]);
     expect(data?.pages[1]?.data.map((t) => t.id)).toEqual(["d", "e"]);
@@ -185,27 +181,133 @@ describe("useDeleteTodo", () => {
       pageParams: [undefined],
     });
 
-    const setTodoState = vi.fn();
-    const clearTodoState = vi.fn();
+    const callbacks = makeCallbacks();
     mockApiFetch.mockResolvedValueOnce(undefined);
     mockApiFetch.mockResolvedValueOnce(undefined);
 
     const { result } = renderHook(
-      () => useDeleteTodo({ setTodoState, clearTodoState }),
+      () => useDeleteTodo(callbacks),
       { wrapper: makeWrapper(queryClient) },
     );
 
     act(() => {
-      result.current.mutate({ id: "a" });
-      result.current.mutate({ id: "c" });
+      result.current.handleDelete("a");
+      result.current.handleDelete("c");
     });
 
     await waitFor(() => {
-      expect(clearTodoState).toHaveBeenCalledWith("a");
-      expect(clearTodoState).toHaveBeenCalledWith("c");
+      expect(callbacks.clearTodoState).toHaveBeenCalledWith("a");
+      expect(callbacks.clearTodoState).toHaveBeenCalledWith("c");
     });
 
-    expect(setTodoState).toHaveBeenCalledWith("a", { state: "syncing" });
-    expect(setTodoState).toHaveBeenCalledWith("c", { state: "syncing" });
+    expect(callbacks.setTodoState).toHaveBeenCalledWith(
+      "a",
+      expect.objectContaining({ state: "syncing" }),
+    );
+    expect(callbacks.setTodoState).toHaveBeenCalledWith(
+      "c",
+      expect.objectContaining({ state: "syncing" }),
+    );
+  });
+
+  // wasConfirmed conditional DELETE tests (AC 5 & 6)
+  it("unconfirmed todo delete: no DELETE request, just clearTodoState (AC 5)", () => {
+    const queryClient = makeQueryClient();
+    queryClient.setQueryData(QUERY_KEY, {
+      pages: [{ data: [makeTodo("a")], cursor: null }],
+      pageParams: [undefined],
+    });
+
+    const callbacks = makeCallbacks({ wasConfirmed: false });
+
+    const { result } = renderHook(
+      () => useDeleteTodo(callbacks),
+      { wrapper: makeWrapper(queryClient) },
+    );
+
+    act(() => {
+      result.current.handleDelete("a");
+    });
+
+    expect(mockApiFetch).not.toHaveBeenCalled();
+    expect(callbacks.clearTodoState).toHaveBeenCalledWith("a");
+  });
+
+  it("confirmed todo delete: DELETE request sent (AC 6)", async () => {
+    const queryClient = makeQueryClient();
+    queryClient.setQueryData(QUERY_KEY, {
+      pages: [{ data: [makeTodo("a")], cursor: null }],
+      pageParams: [undefined],
+    });
+
+    const callbacks = makeCallbacks({ wasConfirmed: true });
+    mockApiFetch.mockResolvedValueOnce(undefined);
+
+    const { result } = renderHook(
+      () => useDeleteTodo(callbacks),
+      { wrapper: makeWrapper(queryClient) },
+    );
+
+    act(() => {
+      result.current.handleDelete("a");
+    });
+
+    await waitFor(() => expect(callbacks.clearTodoState).toHaveBeenCalledWith("a"));
+    expect(mockApiFetch).toHaveBeenCalledWith("/api/todos/a", { method: "DELETE" });
+  });
+
+  it("unconfirmed todo delete: row removed from cache with no server call (AC 5)", () => {
+    const queryClient = makeQueryClient();
+    queryClient.setQueryData(QUERY_KEY, {
+      pages: [{ data: [makeTodo("a"), makeTodo("b")], cursor: null }],
+      pageParams: [undefined],
+    });
+
+    const callbacks = makeCallbacks({ wasConfirmed: false });
+
+    const { result } = renderHook(
+      () => useDeleteTodo(callbacks),
+      { wrapper: makeWrapper(queryClient) },
+    );
+
+    act(() => {
+      result.current.handleDelete("a");
+    });
+
+    expect(mockApiFetch).not.toHaveBeenCalled();
+    expect(callbacks.clearTodoState).toHaveBeenCalledWith("a");
+    const data = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
+    expect(data?.pages[0]?.data.map((t) => t.id)).toEqual(["b"]);
+  });
+
+  it("error response on delete stores pendingOperation for retry", async () => {
+    const queryClient = makeQueryClient();
+    queryClient.setQueryData(QUERY_KEY, {
+      pages: [{ data: [makeTodo("a")], cursor: null }],
+      pageParams: [undefined],
+    });
+
+    const callbacks = makeCallbacks({ wasConfirmed: true });
+    mockApiFetch.mockRejectedValueOnce(
+      new ApiFetchError("NETWORK_ERROR", "Network failed", undefined, 0),
+    );
+
+    const { result } = renderHook(
+      () => useDeleteTodo(callbacks),
+      { wrapper: makeWrapper(queryClient) },
+    );
+
+    act(() => {
+      result.current.handleDelete("a");
+    });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+
+    expect(callbacks.setTodoState).toHaveBeenLastCalledWith("a", {
+      state: "transient-error",
+      errorMessage: "Network failed",
+      wasConfirmed: true,
+      pendingOperation: { type: "delete", args: { id: "a" } },
+    });
   });
 });

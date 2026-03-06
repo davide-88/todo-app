@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, waitFor, act } from "@testing-library/react";
 import { createApiFetchMock, makeQueryClient, makeWrapper, QUERY_KEY } from "@/test-utils/mock-api.js";
+import { act, renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useCreateTodo } from "./use-create-todo.js";
 
 vi.mock("@/lib/api-fetch.js", () => createApiFetchMock());
@@ -30,7 +30,7 @@ describe("useCreateTodo", () => {
 
     const setTodoState = vi.fn();
     const clearTodoState = vi.fn();
-    mockApiFetch.mockReturnValue(new Promise(() => {}));
+    mockApiFetch.mockReturnValue(new Promise(() => { }));
 
     const { result } = renderHook(
       () => useCreateTodo({ setTodoState, clearTodoState }),
@@ -49,7 +49,7 @@ describe("useCreateTodo", () => {
     });
   });
 
-  it("sets syncing state for new todo on mutate", async () => {
+  it("sets syncing state with wasConfirmed=false and pendingOperation on mutate", async () => {
     const queryClient = makeQueryClient();
     queryClient.setQueryData(QUERY_KEY, {
       pages: [{ data: [], cursor: null }],
@@ -58,7 +58,7 @@ describe("useCreateTodo", () => {
 
     const setTodoState = vi.fn();
     const clearTodoState = vi.fn();
-    mockApiFetch.mockReturnValue(new Promise(() => {}));
+    mockApiFetch.mockReturnValue(new Promise(() => { }));
 
     const { result } = renderHook(
       () => useCreateTodo({ setTodoState, clearTodoState }),
@@ -70,7 +70,11 @@ describe("useCreateTodo", () => {
     });
 
     await waitFor(() => {
-      expect(setTodoState).toHaveBeenCalledWith("new-id", { state: "syncing" });
+      expect(setTodoState).toHaveBeenCalledWith("new-id", {
+        state: "syncing",
+        wasConfirmed: false,
+        pendingOperation: { type: "create", args: { id: "new-id", text: "New todo" } },
+      });
     });
   });
 
@@ -162,7 +166,7 @@ describe("useCreateTodo", () => {
     expect(invalidateSpy).not.toHaveBeenCalled();
   });
 
-  it("classifies 400 VALIDATION_ERROR as permanent-error with message", async () => {
+  it("classifies 400 VALIDATION_ERROR as permanent-error with wasConfirmed=false and pendingOperation", async () => {
     const queryClient = makeQueryClient();
     queryClient.setQueryData(QUERY_KEY, {
       pages: [{ data: [], cursor: null }],
@@ -186,15 +190,12 @@ describe("useCreateTodo", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
-    expect(setTodoState).toHaveBeenLastCalledWith(
-      "new-id",
-      expect.objectContaining({
-        state: "permanent-error",
-        errorMessage: "Text too long",
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        pendingOperation: expect.objectContaining({ type: "create" }),
-      }),
-    );
+    expect(setTodoState).toHaveBeenLastCalledWith("new-id", {
+      state: "permanent-error",
+      errorMessage: "Text too long",
+      wasConfirmed: false,
+      pendingOperation: { type: "create", args: { id: "new-id", text: "New todo" } },
+    });
   });
 
   it("classifies 422 error as permanent-error", async () => {
@@ -223,11 +224,11 @@ describe("useCreateTodo", () => {
 
     expect(setTodoState).toHaveBeenLastCalledWith(
       "new-id",
-      expect.objectContaining({ state: "permanent-error" }),
+      expect.objectContaining({ state: "permanent-error", wasConfirmed: false }),
     );
   });
 
-  it("classifies NETWORK_ERROR as transient-error", async () => {
+  it("classifies NETWORK_ERROR as transient-error with wasConfirmed=false and pendingOperation", async () => {
     const queryClient = makeQueryClient();
     queryClient.setQueryData(QUERY_KEY, {
       pages: [{ data: [], cursor: null }],
@@ -251,14 +252,12 @@ describe("useCreateTodo", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
-    expect(setTodoState).toHaveBeenLastCalledWith(
-      "new-id",
-      expect.objectContaining({
-        state: "transient-error",
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        pendingOperation: expect.objectContaining({ type: "create" }),
-      }),
-    );
+    expect(setTodoState).toHaveBeenLastCalledWith("new-id", {
+      state: "transient-error",
+      errorMessage: "Network failed",
+      wasConfirmed: false,
+      pendingOperation: { type: "create", args: { id: "new-id", text: "New todo" } },
+    });
   });
 
   it("classifies 500 error as transient-error", async () => {
@@ -287,11 +286,7 @@ describe("useCreateTodo", () => {
 
     expect(setTodoState).toHaveBeenLastCalledWith(
       "new-id",
-      expect.objectContaining({
-        state: "transient-error",
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        pendingOperation: expect.objectContaining({ type: "create" }),
-      }),
+      expect.objectContaining({ state: "transient-error", wasConfirmed: false }),
     );
   });
 
@@ -319,11 +314,7 @@ describe("useCreateTodo", () => {
 
     expect(setTodoState).toHaveBeenLastCalledWith(
       "new-id",
-      expect.objectContaining({
-        state: "transient-error",
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        pendingOperation: expect.objectContaining({ type: "create" }),
-      }),
+      expect.objectContaining({ state: "transient-error", wasConfirmed: false }),
     );
   });
 
@@ -353,11 +344,7 @@ describe("useCreateTodo", () => {
 
     expect(setTodoState).toHaveBeenLastCalledWith(
       "new-id",
-      expect.objectContaining({
-        state: "transient-error",
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        pendingOperation: expect.objectContaining({ type: "create" }),
-      }),
+      expect.objectContaining({ state: "transient-error", wasConfirmed: false }),
     );
   });
 
@@ -371,7 +358,6 @@ describe("useCreateTodo", () => {
     const setTodoState = vi.fn();
     const clearTodoState = vi.fn();
 
-    // All 5 mutations resolve asynchronously
     for (let i = 1; i <= 5; i++) {
       mockApiFetch.mockResolvedValueOnce(makeTodo(`id-${i}`, `Todo ${i}`));
     }
@@ -381,21 +367,21 @@ describe("useCreateTodo", () => {
       { wrapper: makeWrapper(queryClient) },
     );
 
-    // Fire all 5 without awaiting — rapid succession
     act(() => {
       for (let i = 1; i <= 5; i++) {
         result.current.mutate({ id: `id-${i}`, text: `Todo ${i}` });
       }
     });
 
-    // All 5 should have syncing state set
     await waitFor(() => {
       for (let i = 1; i <= 5; i++) {
-        expect(setTodoState).toHaveBeenCalledWith(`id-${i}`, { state: "syncing" });
+        expect(setTodoState).toHaveBeenCalledWith(
+          `id-${i}`,
+          expect.objectContaining({ state: "syncing", wasConfirmed: false }),
+        );
       }
     });
 
-    // All 5 should eventually clear
     await waitFor(() => {
       for (let i = 1; i <= 5; i++) {
         expect(clearTodoState).toHaveBeenCalledWith(`id-${i}`);
@@ -403,7 +389,7 @@ describe("useCreateTodo", () => {
     });
   });
 
-  it("stores pendingOperation on transient error for retry", async () => {
+  it("retry after failure does not duplicate the optimistic todo in cache", async () => {
     const queryClient = makeQueryClient();
     queryClient.setQueryData(QUERY_KEY, {
       pages: [{ data: [], cursor: null }],
@@ -412,6 +398,8 @@ describe("useCreateTodo", () => {
 
     const setTodoState = vi.fn();
     const clearTodoState = vi.fn();
+
+    // First attempt fails
     mockApiFetch.mockRejectedValueOnce(
       new ApiFetchError("NETWORK_ERROR", "Network failed", undefined, 0),
     );
@@ -422,67 +410,29 @@ describe("useCreateTodo", () => {
     );
 
     act(() => {
-      result.current.mutate({ id: "new-id", text: "New todo" });
+      result.current.mutate({ id: "retry-id", text: "Retry todo" });
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
-    expect(setTodoState).toHaveBeenLastCalledWith(
-      "new-id",
-      expect.objectContaining({
-        state: "transient-error",
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        pendingOperation: expect.objectContaining({
-          type: "create",
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          args: expect.objectContaining({ id: "new-id", text: "New todo" }),
-        }),
-      }),
-    );
-  });
+    // Optimistic todo should be in cache (no rollback on create error)
+    let data = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
+    expect(data?.pages[0]?.data.filter((t) => t.id === "retry-id")).toHaveLength(1);
 
-  it("retry after failed create does not duplicate the optimistic todo", async () => {
-    const queryClient = makeQueryClient();
-    queryClient.setQueryData(QUERY_KEY, {
-      pages: [{ data: [], cursor: null }],
-      pageParams: [undefined],
-    });
+    // Retry: same mutation with same ID
+    mockApiFetch.mockResolvedValueOnce(makeTodo("retry-id", "Retry todo"));
 
-    const setTodoState = vi.fn();
-    const clearTodoState = vi.fn();
-
-    // First call fails, second (retry) succeeds
-    mockApiFetch
-      .mockRejectedValueOnce(new ApiFetchError("NETWORK_ERROR", "Network failed", undefined, 0))
-      .mockResolvedValueOnce(makeTodo("new-id", "New todo"));
-
-    const { result } = renderHook(
-      () => useCreateTodo({ setTodoState, clearTodoState }),
-      { wrapper: makeWrapper(queryClient) },
-    );
-
-    // Initial create → fails
     act(() => {
-      result.current.mutate({ id: "new-id", text: "New todo" });
+      result.current.mutate({ id: "retry-id", text: "Retry todo" });
     });
 
-    await waitFor(() => expect(result.current.isError).toBe(true));
-
-    // Optimistic todo should be in cache once
-    const beforeRetry = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
-    const countBefore = beforeRetry?.pages.flatMap((p) => p.data).filter((t) => t.id === "new-id").length;
-    expect(countBefore).toBe(1);
-
-    // Retry the same create
-    act(() => {
-      result.current.mutate({ id: "new-id", text: "New todo" });
-    });
-
-    // Should still be exactly one entry, not duplicated
     await waitFor(() => {
-      const afterRetry = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
-      const countAfter = afterRetry?.pages.flatMap((p) => p.data).filter((t) => t.id === "new-id").length;
-      expect(countAfter).toBe(1);
+      expect(clearTodoState).toHaveBeenCalledWith("retry-id");
     });
+
+    // Must still be exactly 1 entry — not duplicated
+    data = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
+    const matches = data?.pages.flatMap((p) => p.data).filter((t) => t.id === "retry-id");
+    expect(matches).toHaveLength(1);
   });
 });
