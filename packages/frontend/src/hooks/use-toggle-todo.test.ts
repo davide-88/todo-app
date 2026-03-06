@@ -70,7 +70,7 @@ describe("useToggleTodo", () => {
     });
   });
 
-  it("successful toggle → cache invalidated, state cleared", async () => {
+  it("successful toggle → todo removed from cache, state cleared (no invalidateQueries)", async () => {
     const queryClient = makeQueryClient();
     queryClient.setQueryData(QUERY_KEY, {
       pages: [{ data: [makeTodo("a", false)], cursor: null }],
@@ -95,7 +95,11 @@ describe("useToggleTodo", () => {
     await waitFor(() => {
       expect(clearTodoState).toHaveBeenCalledWith("a");
     });
-    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["todos"] });
+    // Todo is removed from cache via setQueriesData (not via invalidateQueries)
+    const data = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
+    expect(data?.pages[0]?.data.find((t) => t.id === "a")).toBeUndefined();
+    // invalidateQueries must NOT be called — it would reset pagination
+    expect(invalidateSpy).not.toHaveBeenCalled();
   });
 
   it("transient error → rollback to previous value + transient-error state with wasConfirmed=true and pendingOperation", async () => {
@@ -222,6 +226,52 @@ describe("useToggleTodo", () => {
       "a",
       expect.objectContaining({ state: "transient-error", wasConfirmed: true }),
     );
+  });
+
+  it("successful toggle preserves pages 2+ in cache (pagination stability)", async () => {
+    const queryClient = makeQueryClient();
+    const altKey = ["todos", { status: "active", order: "desc" }];
+    const twoPages = {
+      pages: [
+        { data: [makeTodo("a", false), makeTodo("b", false)], cursor: "cursor-1" },
+        { data: [makeTodo("c", false), makeTodo("d", false)], cursor: null },
+      ],
+      pageParams: [undefined, "cursor-1"],
+    };
+    queryClient.setQueryData(QUERY_KEY, twoPages);
+    queryClient.setQueryData(altKey, twoPages);
+
+    const setTodoState = vi.fn();
+    const clearTodoState = vi.fn();
+    mockApiFetch.mockResolvedValueOnce(makeTodo("a", true));
+
+    const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+
+    const { result } = renderHook(
+      () => useToggleTodo({ setTodoState, clearTodoState }),
+      { wrapper: makeWrapper(queryClient) },
+    );
+
+    act(() => {
+      result.current.mutate({ id: "a", completed: true });
+    });
+
+    await waitFor(() => {
+      expect(clearTodoState).toHaveBeenCalledWith("a");
+    });
+
+    // toggled todo removed from primary key, pages preserved
+    const data = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
+    expect(data?.pages[0]?.data.find((t) => t.id === "a")).toBeUndefined();
+    expect(data?.pages).toHaveLength(2);
+    expect(data?.pages[1]?.data.map((t) => t.id)).toContain("c");
+
+    // secondary cache key also preserves both pages
+    const data2 = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(altKey);
+    expect(data2?.pages).toHaveLength(2);
+
+    // invalidateQueries must NOT be called — it would reset pagination
+    expect(invalidateSpy).not.toHaveBeenCalled();
   });
 
   it("concurrent toggles on different todos → independent states", async () => {

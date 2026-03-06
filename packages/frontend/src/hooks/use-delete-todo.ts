@@ -37,7 +37,6 @@ export function useDeleteTodo({ setTodoState, clearTodoState, getTodoStateEntry 
       return { previousData };
     },
     onSuccess: (_data, { id }) => {
-      void queryClient.invalidateQueries({ queryKey: ["todos"] });
       clearTodoState(id);
     },
     onError: (error, { id }, context) => {
@@ -56,7 +55,7 @@ export function useDeleteTodo({ setTodoState, clearTodoState, getTodoStateEntry 
 
   const handleDelete = (id: string) => {
     const entry = getTodoStateEntry(id);
-    if (!entry?.wasConfirmed) {
+    if (entry !== undefined && !entry.wasConfirmed) {
       queryClient.setQueriesData<TodoInfiniteData>({ queryKey: ["todos"] }, (old) => {
         if (!old) return old;
         return {

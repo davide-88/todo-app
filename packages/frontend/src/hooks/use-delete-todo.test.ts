@@ -55,7 +55,7 @@ describe("useDeleteTodo", () => {
     );
   });
 
-  it("successful delete → todo stays removed, state cleared", async () => {
+  it("successful delete → todo stays removed, state cleared (no invalidateQueries)", async () => {
     const queryClient = makeQueryClient();
     queryClient.setQueryData(QUERY_KEY, {
       pages: [{ data: [makeTodo("a"), makeTodo("b")], cursor: null }],
@@ -79,7 +79,12 @@ describe("useDeleteTodo", () => {
     await waitFor(() => {
       expect(callbacks.clearTodoState).toHaveBeenCalledWith("a");
     });
-    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["todos"] });
+    // Todo stays removed from cache (optimistic removal in onMutate is sufficient)
+    const data = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
+    expect(data?.pages[0]?.data.find((t) => t.id === "a")).toBeUndefined();
+    expect(data?.pages[0]?.data.find((t) => t.id === "b")).toBeDefined();
+    // invalidateQueries must NOT be called — it would reset pagination
+    expect(invalidateSpy).not.toHaveBeenCalled();
   });
 
   it("transient error → todo reappears in original position + transient-error state", async () => {
@@ -258,6 +263,34 @@ describe("useDeleteTodo", () => {
     expect(mockApiFetch).toHaveBeenCalledWith("/api/todos/a", { method: "DELETE" });
   });
 
+  it("server todo (no state entry) delete: DELETE request sent", async () => {
+    const queryClient = makeQueryClient();
+    queryClient.setQueryData(QUERY_KEY, {
+      pages: [{ data: [makeTodo("a")], cursor: null }],
+      pageParams: [undefined],
+    });
+
+    // getTodoStateEntry returns undefined for server-fetched todos (no stateMap entry)
+    const callbacks = {
+      setTodoState: vi.fn(),
+      clearTodoState: vi.fn(),
+      getTodoStateEntry: vi.fn().mockReturnValue(undefined),
+    };
+    mockApiFetch.mockResolvedValueOnce(undefined);
+
+    const { result } = renderHook(
+      () => useDeleteTodo(callbacks),
+      { wrapper: makeWrapper(queryClient) },
+    );
+
+    act(() => {
+      result.current.handleDelete("a");
+    });
+
+    await waitFor(() => expect(callbacks.clearTodoState).toHaveBeenCalledWith("a"));
+    expect(mockApiFetch).toHaveBeenCalledWith("/api/todos/a", { method: "DELETE" });
+  });
+
   it("unconfirmed todo delete: row removed from cache with no server call (AC 5)", () => {
     const queryClient = makeQueryClient();
     queryClient.setQueryData(QUERY_KEY, {
@@ -409,5 +442,56 @@ describe("useDeleteTodo integration with useTodoStates", () => {
     const allIds = finalData?.pages.flatMap((p) => p.data).map((t) => t.id) ?? [];
     expect(allIds).toContain("id-2");
     expect(allIds).not.toContain("id-1");
+  });
+
+  it("delete success does NOT call invalidateQueries (pagination stability)", async () => {
+    const queryClient = makeQueryClient();
+    const page2Key = ["todos", { status: "active", order: "desc" }];
+    // Simulate two pages loaded in cache
+    queryClient.setQueryData(QUERY_KEY, {
+      pages: [
+        { data: [makeTodo("p1-todo-1"), makeTodo("p1-todo-2")], cursor: "cursor-abc" },
+        { data: [makeTodo("p2-todo-1"), makeTodo("p2-todo-2")], cursor: null },
+      ],
+      pageParams: [undefined, "cursor-abc"],
+    });
+    queryClient.setQueryData(page2Key, {
+      pages: [
+        { data: [makeTodo("p1-todo-1"), makeTodo("p1-todo-2")], cursor: "cursor-abc" },
+        { data: [makeTodo("p2-todo-1"), makeTodo("p2-todo-2")], cursor: null },
+      ],
+      pageParams: [undefined, "cursor-abc"],
+    });
+
+    const callbacks = makeCallbacks();
+    mockApiFetch.mockResolvedValueOnce(undefined);
+
+    const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+
+    const { result } = renderHook(
+      () => useDeleteTodo(callbacks),
+      { wrapper: makeWrapper(queryClient) },
+    );
+
+    act(() => {
+      result.current.handleDelete("p1-todo-1");
+    });
+
+    await waitFor(() => {
+      expect(callbacks.clearTodoState).toHaveBeenCalledWith("p1-todo-1");
+    });
+
+    // invalidateQueries must NOT be called — it would reset pagination to page 1
+    expect(invalidateSpy).not.toHaveBeenCalled();
+
+    // Both pages must still be in cache (only deleted todo removed)
+    const data = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
+    expect(data?.pages).toHaveLength(2);
+    expect(data?.pages[1]?.data.map((t) => t.id)).toContain("p2-todo-1");
+
+    // Secondary query key also preserves both pages
+    const data2 = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(page2Key);
+    expect(data2?.pages).toHaveLength(2);
+    expect(data2?.pages[1]?.data.map((t) => t.id)).toContain("p2-todo-1");
   });
 });

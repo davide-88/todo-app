@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createElement } from "react";
 import type { ReactNode } from "react";
@@ -79,5 +79,45 @@ describe("useTodos", () => {
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.error).toBeTruthy();
+  });
+
+  it("fetchNextPage appends second page to todos and passes cursor param", async () => {
+    const page1 = [
+      { id: "1", text: "todo 1", completed: false, createdAt: "2024-01-02T00:00:00Z", updatedAt: "2024-01-02T00:00:00Z" },
+    ];
+    const page2 = [
+      { id: "2", text: "todo 2", completed: false, createdAt: "2024-01-01T00:00:00Z", updatedAt: "2024-01-01T00:00:00Z" },
+    ];
+    const cursor = "cursor-abc";
+
+    let resolvePage2!: (val: unknown) => void;
+    const page2Promise = new Promise((resolve) => { resolvePage2 = resolve; });
+
+    mockApiFetch
+      .mockResolvedValueOnce({ data: page1, cursor })
+      .mockReturnValueOnce(page2Promise);
+
+    const { result } = renderHook(() => useTodos(), { wrapper: makeWrapper() });
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    expect(result.current.todos).toEqual(page1);
+    expect(result.current.hasNextPage).toBe(true);
+
+    act(() => {
+      void result.current.fetchNextPage();
+    });
+
+    // page2 is still pending — isFetchingNextPage must be true
+    await waitFor(() => expect(result.current.isFetchingNextPage).toBe(true));
+
+    act(() => { resolvePage2({ data: page2, cursor: null }); });
+
+    await waitFor(() => expect(result.current.isFetchingNextPage).toBe(false));
+    expect(result.current.todos).toEqual([...page1, ...page2]);
+    expect(result.current.hasNextPage).toBe(false);
+    expect(mockApiFetch).toHaveBeenCalledWith(
+      expect.stringContaining(`cursor=${cursor}`),
+      undefined,
+    );
   });
 });

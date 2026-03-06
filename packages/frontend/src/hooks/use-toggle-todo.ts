@@ -39,7 +39,16 @@ export function useToggleTodo({ setTodoState, clearTodoState }: TodoMutationCall
       return { previousData };
     },
     onSuccess: (_data, { id }) => {
-      void queryClient.invalidateQueries({ queryKey: ["todos"] });
+      queryClient.setQueriesData<TodoInfiniteData>({ queryKey: ["todos"] }, (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            data: page.data.filter((todo) => todo.id !== id),
+          })),
+        };
+      });
       clearTodoState(id);
     },
     onError: (error, { id, completed }, context) => {
