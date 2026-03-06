@@ -12,10 +12,22 @@ import { useToggleTodo } from "./hooks/use-toggle-todo.js";
 export function App() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
+  const [activeTab, setActiveTab] = useState<"active" | "completed">(() => {
+    const raw = new URLSearchParams(window.location.search).get("todo-status");
+    return raw === "completed" ? "completed" : "active";
+  });
+
   const { todos, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage } =
     useTodos({
+      status: activeTab,
       order: sortOrder,
     });
+
+  const handleTabChange = (value: string) => {
+    if (value !== "active" && value !== "completed") return;
+    setActiveTab(value);
+    history.replaceState(null, "", `?todo-status=${value}`);
+  };
 
   const {
     getTodoState,
@@ -62,7 +74,7 @@ export function App() {
           }
         />
         <InputArea onSubmit={handleSubmit} />
-        <Tabs defaultValue="active">
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
           <TabsList className="w-full grid grid-cols-2 rounded-none bg-transparent p-0 h-auto">
             <TabsTrigger
               value="active"

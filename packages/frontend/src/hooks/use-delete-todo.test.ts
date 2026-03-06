@@ -263,6 +263,34 @@ describe("useDeleteTodo", () => {
     expect(mockApiFetch).toHaveBeenCalledWith("/api/todos/a", { method: "DELETE" });
   });
 
+  it("server todo (no state entry) delete: DELETE request sent", async () => {
+    const queryClient = makeQueryClient();
+    queryClient.setQueryData(QUERY_KEY, {
+      pages: [{ data: [makeTodo("a")], cursor: null }],
+      pageParams: [undefined],
+    });
+
+    // getTodoStateEntry returns undefined for server-fetched todos (no stateMap entry)
+    const callbacks = {
+      setTodoState: vi.fn(),
+      clearTodoState: vi.fn(),
+      getTodoStateEntry: vi.fn().mockReturnValue(undefined),
+    };
+    mockApiFetch.mockResolvedValueOnce(undefined);
+
+    const { result } = renderHook(
+      () => useDeleteTodo(callbacks),
+      { wrapper: makeWrapper(queryClient) },
+    );
+
+    act(() => {
+      result.current.handleDelete("a");
+    });
+
+    await waitFor(() => expect(callbacks.clearTodoState).toHaveBeenCalledWith("a"));
+    expect(mockApiFetch).toHaveBeenCalledWith("/api/todos/a", { method: "DELETE" });
+  });
+
   it("unconfirmed todo delete: row removed from cache with no server call (AC 5)", () => {
     const queryClient = makeQueryClient();
     queryClient.setQueryData(QUERY_KEY, {

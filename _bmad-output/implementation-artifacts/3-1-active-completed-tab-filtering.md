@@ -1,6 +1,6 @@
 # Story 3.1: Active/Completed Tab Filtering
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -49,35 +49,35 @@ so that I can focus on what still needs doing or review what I've accomplished.
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1 — Write tests for tab state initialization from URL** (AC: 6, 7)
-  - [ ] Test: `App` renders with `?todo-status=completed` → Completed tab is active, `useTodos` called with `status: "completed"`
-  - [ ] Test: `App` renders with no URL param → Active tab is active, `useTodos` called with `status: "active"`
-  - [ ] Test: `App` renders with `?todo-status=invalid` → Active tab is active (defaults gracefully)
+- [x] **Task 1 — Write tests for tab state initialization from URL** (AC: 6, 7)
+  - [x] Test: `App` renders with `?todo-status=completed` → Completed tab is active, `useTodos` called with `status: "completed"`
+  - [x] Test: `App` renders with no URL param → Active tab is active, `useTodos` called with `status: "active"`
+  - [x] Test: `App` renders with `?todo-status=invalid` → Active tab is active (defaults gracefully)
 
-- [ ] **Task 2 — Write tests for tab switching behavior** (AC: 4, 5)
-  - [ ] Test: click Completed tab → `useTodos` refetches with `status: "completed"`
-  - [ ] Test: click Active tab → `useTodos` refetches with `status: "active"`
-  - [ ] Test: click Completed tab → `history.replaceState` called with URL containing `?todo-status=completed`
-  - [ ] Test: click Active tab → `history.replaceState` called with URL containing `?todo-status=active`
+- [x] **Task 2 — Write tests for tab switching behavior** (AC: 4, 5)
+  - [x] Test: click Completed tab → `useTodos` refetches with `status: "completed"`
+  - [x] Test: click Active tab → `useTodos` refetches with `status: "active"`
+  - [x] Test: click Completed tab → `history.replaceState` called with URL containing `?todo-status=completed`
+  - [x] Test: click Active tab → `history.replaceState` called with URL containing `?todo-status=active`
 
-- [ ] **Task 3 — Write test for todo removal on toggle success** (AC: 8)
-  - [ ] Test: `useToggleTodo` success calls `invalidateQueries({ queryKey: ["todos"] })` — confirms filtered query is invalidated, triggering refetch with current status
+- [x] **Task 3 — Write test for todo removal on toggle success** (AC: 8)
+  - [x] Test: `useToggleTodo` success calls `invalidateQueries({ queryKey: ["todos"] })` — confirms filtered query is invalidated, triggering refetch with current status
 
-- [ ] **Task 4 — Implement controlled tab state in `app.tsx`** (AC: 1, 2, 3, 6, 7)
-  - [ ] Read initial tab value from `new URLSearchParams(window.location.search).get('todo-status')`
-  - [ ] Validate parsed value — only accept `"active"` or `"completed"`, default to `"active"`
-  - [ ] Add `activeTab` state: `const [activeTab, setActiveTab] = useState<"active" | "completed">(initialTab)`
-  - [ ] Pass `status: activeTab` to `useTodos`
-  - [ ] Convert `<Tabs>` from uncontrolled to controlled: add `value={activeTab}` and `onValueChange` handler
+- [x] **Task 4 — Implement controlled tab state in `app.tsx`** (AC: 1, 2, 3, 6, 7)
+  - [x] Read initial tab value from `new URLSearchParams(window.location.search).get('todo-status')`
+  - [x] Validate parsed value — only accept `"active"` or `"completed"`, default to `"active"`
+  - [x] Add `activeTab` state: `const [activeTab, setActiveTab] = useState<"active" | "completed">(initialTab)`
+  - [x] Pass `status: activeTab` to `useTodos`
+  - [x] Convert `<Tabs>` from uncontrolled to controlled: add `value={activeTab}` and `onValueChange` handler
 
-- [ ] **Task 5 — Implement URL sync on tab change** (AC: 4, 5)
-  - [ ] In `onValueChange` handler: call `history.replaceState(null, '', `?todo-status=${tab}`)` after updating state
-  - [ ] Validate the value is `"active" | "completed"` before calling `setActiveTab`
+- [x] **Task 5 — Implement URL sync on tab change** (AC: 4, 5)
+  - [x] In `onValueChange` handler: call `history.replaceState(null, '', `?todo-status=${tab}`)` after updating state
+  - [x] Validate the value is `"active" | "completed"` before calling `setActiveTab`
 
-- [ ] **Task 6 — Verify all checks pass**
-  - [ ] `pnpm --filter @todo-app/frontend typecheck` passes with 0 errors
-  - [ ] `pnpm lint` passes with 0 errors
-  - [ ] `pnpm --filter @todo-app/frontend test` — all unit tests green
+- [x] **Task 6 — Verify all checks pass**
+  - [x] `pnpm --filter @todo-app/frontend typecheck` passes with 0 errors
+  - [x] `pnpm lint` passes with 0 errors
+  - [x] `pnpm --filter @todo-app/frontend test` — all unit tests green
 
 ## Dev Notes
 
@@ -307,6 +307,24 @@ claude-sonnet-4-6
 
 ### Debug Log References
 
+- Radix UI `TabsTrigger` fires `onValueChange` in `onMouseDown` (not `onClick`). Tests must use `fireEvent.mouseDown(el, { button: 0 })` to trigger tab switching.
+
 ### Completion Notes List
 
+- Wired `activeTab` state from `window.location.search` into `useTodos({ status: activeTab })`
+- Converted `<Tabs>` from uncontrolled (`defaultValue`) to controlled (`value` + `onValueChange`)
+- `handleTabChange` validates value then calls `setActiveTab` and `history.replaceState`
+- Task 3 (`invalidateQueries`) already covered by existing `use-toggle-todo.test.ts:98`
+- 7 new tests in `app-tab-filtering.test.tsx`; all 161 tests pass
+
 ### File List
+
+- `packages/frontend/src/app.tsx` (modified)
+- `packages/frontend/src/app-tab-filtering.test.tsx` (created)
+
+### Change Log
+
+- 2026-03-06: Implemented Story 3.1 — wired active/completed tab filtering with URL sync
+  - `app.tsx`: converted Tabs to controlled component; added lazy `useState` URL initializer; wired `status: activeTab` into `useTodos`; added `handleTabChange` with `history.replaceState`
+  - `app-tab-filtering.test.tsx`: 7 new tests covering URL init (AC 6,7) and tab switching (AC 4,5)
+- 2026-03-06: Code review fix — refactored `rawStatus`/`initialTab` into lazy `useState` initializer to avoid redundant computation on every render
