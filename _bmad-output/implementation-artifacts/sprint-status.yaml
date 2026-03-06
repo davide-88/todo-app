@@ -57,10 +57,10 @@ development_status:
   epic-2-retrospective: optional
 
   # ─── Epic 3: Filtering, Sorting & Pagination ──────────────────────────────────
-  epic-3: in-progress
-  3-1-active-completed-tab-filtering: ready-for-dev
-  3-2-sort-order-toggle: backlog
-  3-3-cursor-based-pagination: backlog
+  epic-3: done
+  3-1-active-completed-tab-filtering: done
+  3-2-sort-order-toggle: done
+  3-3-cursor-based-pagination: done
   epic-3-retrospective: optional
 
   # ─── Epic 4: Accessibility & Responsive Polish ────────────────────────────────
