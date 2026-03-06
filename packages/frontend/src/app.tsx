@@ -16,19 +16,30 @@ export function App() {
     order: sortOrder,
   });
 
-  const { getTodoState, getErrorMessage, setTodoState, clearTodoState } = useTodoStates();
+  const { getTodoState, getErrorMessage, setTodoState, clearTodoState, getTodoStateEntry } =
+    useTodoStates();
   const createMutation = useCreateTodo({ setTodoState, clearTodoState });
   const toggleMutation = useToggleTodo({ setTodoState, clearTodoState });
-  const deleteMutation = useDeleteTodo({ setTodoState, clearTodoState });
+  const deleteMutation = useDeleteTodo({ setTodoState, clearTodoState, getTodoStateEntry });
 
   const handleToggle = (id: string) => {
     const todo = todos.find((t) => t.id === id);
     if (todo) toggleMutation.mutate({ id, completed: !todo.completed });
   };
-  const handleDelete = (id: string) => deleteMutation.mutate({ id });
+
+  const handleDelete = (id: string) => deleteMutation.handleDelete(id);
 
   const handleSubmit = (text: string) => {
     createMutation.mutate({ id: crypto.randomUUID(), text });
+  };
+
+  const handleRetry = (id: string) => {
+    const entry = getTodoStateEntry(id);
+    if (!entry?.pendingOperation) return;
+    const op = entry.pendingOperation;
+    if (op.type === "create") createMutation.mutate(op.args);
+    else if (op.type === "toggle") toggleMutation.mutate(op.args);
+    else if (op.type === "delete") deleteMutation.handleDelete(op.args.id);
   };
 
   return (
@@ -63,6 +74,7 @@ export function App() {
           fetchNextPage={fetchNextPage}
           onToggle={handleToggle}
           onDelete={handleDelete}
+          onRetry={handleRetry}
           getTodoState={getTodoState}
           getErrorMessage={getErrorMessage}
         />

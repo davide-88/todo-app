@@ -37,7 +37,11 @@ describe("useToggleTodo", () => {
       const data = queryClient.getQueryData<{ pages: { data: { id: string; completed: boolean }[] }[] }>(QUERY_KEY);
       expect(data?.pages[0]?.data[0]?.completed).toBe(true);
     });
-    expect(setTodoState).toHaveBeenCalledWith("a", { state: "syncing" });
+    expect(setTodoState).toHaveBeenCalledWith("a", {
+      state: "syncing",
+      wasConfirmed: true,
+      pendingOperation: { type: "toggle", args: { id: "a", completed: true } },
+    });
   });
 
   it("optimistically toggles true → false in cache", async () => {
@@ -94,7 +98,7 @@ describe("useToggleTodo", () => {
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["todos"] });
   });
 
-  it("transient error → rollback to previous value + transient-error state", async () => {
+  it("transient error → rollback to previous value + transient-error state with wasConfirmed=true and pendingOperation", async () => {
     const queryClient = makeQueryClient();
     queryClient.setQueryData(QUERY_KEY, {
       pages: [{ data: [makeTodo("a", false)], cursor: null }],
@@ -118,13 +122,17 @@ describe("useToggleTodo", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
-    // Cache must be rolled back to original false
     const data = queryClient.getQueryData<{ pages: { data: { id: string; completed: boolean }[] }[] }>(QUERY_KEY);
     expect(data?.pages[0]?.data[0]?.completed).toBe(false);
-    expect(setTodoState).toHaveBeenLastCalledWith("a", { state: "transient-error" });
+    expect(setTodoState).toHaveBeenLastCalledWith("a", {
+      state: "transient-error",
+      errorMessage: "Network failed",
+      wasConfirmed: true,
+      pendingOperation: { type: "toggle", args: { id: "a", completed: true } },
+    });
   });
 
-  it("permanent error (400) → rollback to previous value + permanent-error state with message", async () => {
+  it("permanent error (400) → rollback to previous value + permanent-error state with wasConfirmed=true", async () => {
     const queryClient = makeQueryClient();
     queryClient.setQueryData(QUERY_KEY, {
       pages: [{ data: [makeTodo("a", true)], cursor: null }],
@@ -148,16 +156,17 @@ describe("useToggleTodo", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
-    // Rolled back to original true
     const data = queryClient.getQueryData<{ pages: { data: { id: string; completed: boolean }[] }[] }>(QUERY_KEY);
     expect(data?.pages[0]?.data[0]?.completed).toBe(true);
     expect(setTodoState).toHaveBeenLastCalledWith("a", {
       state: "permanent-error",
       errorMessage: "Bad input",
+      wasConfirmed: true,
+      pendingOperation: { type: "toggle", args: { id: "a", completed: false } },
     });
   });
 
-  it("429 rate limited → transient-error", async () => {
+  it("429 rate limited → transient-error with wasConfirmed=true", async () => {
     const queryClient = makeQueryClient();
     queryClient.setQueryData(QUERY_KEY, {
       pages: [{ data: [makeTodo("a", false)], cursor: null }],
@@ -180,7 +189,10 @@ describe("useToggleTodo", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(setTodoState).toHaveBeenLastCalledWith("a", { state: "transient-error" });
+    expect(setTodoState).toHaveBeenLastCalledWith(
+      "a",
+      expect.objectContaining({ state: "transient-error", wasConfirmed: true }),
+    );
   });
 
   it("NETWORK_ERROR → transient-error (error classification reuse)", async () => {
@@ -206,7 +218,10 @@ describe("useToggleTodo", () => {
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(setTodoState).toHaveBeenLastCalledWith("a", { state: "transient-error" });
+    expect(setTodoState).toHaveBeenLastCalledWith(
+      "a",
+      expect.objectContaining({ state: "transient-error", wasConfirmed: true }),
+    );
   });
 
   it("concurrent toggles on different todos → independent states", async () => {
@@ -236,7 +251,13 @@ describe("useToggleTodo", () => {
       expect(clearTodoState).toHaveBeenCalledWith("b");
     });
 
-    expect(setTodoState).toHaveBeenCalledWith("a", { state: "syncing" });
-    expect(setTodoState).toHaveBeenCalledWith("b", { state: "syncing" });
+    expect(setTodoState).toHaveBeenCalledWith(
+      "a",
+      expect.objectContaining({ state: "syncing", wasConfirmed: true }),
+    );
+    expect(setTodoState).toHaveBeenCalledWith(
+      "b",
+      expect.objectContaining({ state: "syncing", wasConfirmed: true }),
+    );
   });
 });
