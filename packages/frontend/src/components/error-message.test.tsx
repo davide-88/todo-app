@@ -19,4 +19,11 @@ describe("ErrorMessage", () => {
     const { container } = render(<ErrorMessage state="permanent-error" message="" />);
     expect(container.firstChild).toBeNull();
   });
+
+  it("applies text-[13px] and text-destructive classes", () => {
+    render(<ErrorMessage state="permanent-error" message="Some error" />);
+    const alert = screen.getByRole("alert");
+    expect(alert.className).toContain("text-[13px]");
+    expect(alert.className).toContain("text-destructive");
+  });
 });

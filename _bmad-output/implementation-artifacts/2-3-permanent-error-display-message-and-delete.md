@@ -1,6 +1,6 @@
 # Story 2.3: Permanent Error Display — Message & Delete
 
-Status: ready-for-dev
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -33,36 +33,36 @@ so that I understand what went wrong and can fix it.
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1 — Verify permanent error classification end-to-end** (AC: 1)
-  - [ ] Write integration-style test: `useCreateTodo` receives 400/422 from API -> `classifyError` returns `permanent-error` + `errorMessage` -> `useTodoStates` stores entry -> `getTodoState` returns `permanent-error` -> `getErrorMessage` returns server message
-  - [ ] Test: `useCreateTodo` receives 400 with `{ code: "VALIDATION_ERROR", message: "Text exceeds maximum length" }` -> errorMessage is "Text exceeds maximum length"
-  - [ ] Test: `useCreateTodo` receives 422 -> classified as permanent-error (not transient)
+- [x] **Task 1 — Verify permanent error classification end-to-end** (AC: 1)
+  - [x] Write integration-style test: `useCreateTodo` receives 400/422 from API -> `classifyError` returns `permanent-error` + `errorMessage` -> `useTodoStates` stores entry -> `getTodoState` returns `permanent-error` -> `getErrorMessage` returns server message
+  - [x] Test: `useCreateTodo` receives 400 with `{ code: "VALIDATION_ERROR", message: "Text exceeds maximum length" }` -> errorMessage is "Text exceeds maximum length"
+  - [x] Test: `useCreateTodo` receives 422 -> classified as permanent-error (not transient)
 
-- [ ] **Task 2 — Verify ErrorMessage rendering in TodoRow** (AC: 1, 4)
-  - [ ] Verify existing test: `todo-row.test.tsx` — permanent-error state shows ErrorMessage text below todo text
-  - [ ] Verify existing test: `error-message.test.tsx` — renders role="alert" with message text
-  - [ ] Verify existing test: `todo-row.test.tsx` — permanent-error links error via aria-describedby
-  - [ ] Add test: permanent-error without errorMessage -> ErrorMessage not rendered, no aria-describedby
-  - [ ] Add test: verify 13px destructive color class is applied (`text-[13px] text-destructive`)
+- [x] **Task 2 — Verify ErrorMessage rendering in TodoRow** (AC: 1, 4)
+  - [x] Verify existing test: `todo-row.test.tsx` — permanent-error state shows ErrorMessage text below todo text
+  - [x] Verify existing test: `error-message.test.tsx` — renders role="alert" with message text
+  - [x] Verify existing test: `todo-row.test.tsx` — permanent-error links error via aria-describedby
+  - [x] Add test: permanent-error without errorMessage -> ErrorMessage not rendered, no aria-describedby
+  - [x] Add test: verify 13px destructive color class is applied (`text-[13px] text-destructive`)
 
-- [ ] **Task 3 — Verify no retry button on permanent error** (AC: 1)
-  - [ ] Verify existing test: `todo-row.test.tsx` — permanent-error shows delete but no retry button
-  - [ ] Add test: permanent-error with `onRetry` prop provided -> retry button still NOT rendered (only transient-error triggers retry)
+- [x] **Task 3 — Verify no retry button on permanent error** (AC: 1)
+  - [x] Verify existing test: `todo-row.test.tsx` — permanent-error shows delete but no retry button
+  - [x] Add test: permanent-error with `onRetry` prop provided -> retry button still NOT rendered (only transient-error triggers retry)
 
-- [ ] **Task 4 — Verify delete-on-permanent-error removes without server call** (AC: 2)
-  - [ ] Verify existing test: `use-delete-todo.test.ts` — unconfirmed todo (wasConfirmed=false) delete calls clearTodoState, no DELETE request
-  - [ ] Verify existing test: `use-delete-todo.test.ts` — unconfirmed todo delete removes row from query cache
-  - [ ] Add test: permanent-error todo create -> fails with 400 -> wasConfirmed is false -> click delete -> no fetch call, row removed from cache, state cleared
+- [x] **Task 4 — Verify delete-on-permanent-error removes without server call** (AC: 2)
+  - [x] Verify existing test: `use-delete-todo.test.ts` — unconfirmed todo (wasConfirmed=false) delete calls clearTodoState, no DELETE request
+  - [x] Verify existing test: `use-delete-todo.test.ts` — unconfirmed todo delete removes row from query cache
+  - [x] Add test: permanent-error todo create -> fails with 400 -> wasConfirmed is false -> click delete -> no fetch call, row removed from cache, state cleared
 
-- [ ] **Task 5 — Test delete-and-recreate flow** (AC: 3)
-  - [ ] Add test: create todo -> fails (400 permanent) -> delete from UI -> create new todo with valid text -> server returns 201 -> todo in confirmed state
-  - [ ] Verify the new todo gets a fresh UUID (crypto.randomUUID) and does not reuse the failed todo's ID
+- [x] **Task 5 — Test delete-and-recreate flow** (AC: 3)
+  - [x] Add test: create todo -> fails (400 permanent) -> delete from UI -> create new todo with valid text -> server returns 201 -> todo in confirmed state
+  - [x] Verify the new todo gets a fresh UUID (crypto.randomUUID) and does not reuse the failed todo's ID
 
-- [ ] **Task 6 — Verify all checks pass** (AC: all)
-  - [ ] `pnpm --filter @todo-app/frontend typecheck` passes with 0 errors
-  - [ ] `pnpm lint` passes with 0 errors
-  - [ ] `pnpm --filter @todo-app/frontend test` — all unit tests green
-  - [ ] `pnpm --filter @todo-app/shared test` — all shared tests green
+- [x] **Task 6 — Verify all checks pass** (AC: all)
+  - [x] `pnpm --filter @todo-app/frontend typecheck` passes with 0 errors
+  - [x] `pnpm lint` passes with 0 errors
+  - [x] `pnpm --filter @todo-app/frontend test` — all unit tests green
+  - [x] `pnpm --filter @todo-app/shared test` — all shared tests green
 
 ## Dev Notes
 
@@ -218,10 +218,28 @@ packages/frontend/src/
 
 ### Agent Model Used
 
-{{agent_model_name_version}}
+claude-sonnet-4-6
 
 ### Debug Log References
 
 ### Completion Notes List
 
+- All 6 tasks completed. Implementation was already in place from Stories 2.1 and 2.2.
+- Added 7 new tests across 4 files; frontend test count grew from 134 → 141 (all passing).
+- New tests added:
+  - `use-create-todo.test.ts`: integration test wiring `useTodoStates` + `useCreateTodo` — verifies 400 VALIDATION_ERROR stores `permanent-error` state and `errorMessage` via real state hooks.
+  - `todo-row.test.tsx`: permanent-error without `errorMessage` → no `ErrorMessage` rendered and no `aria-describedby`; permanent-error with `onRetry` prop → retry button still NOT rendered.
+  - `error-message.test.tsx`: verifies `text-[13px]` and `text-destructive` CSS classes applied.
+  - `use-delete-todo.test.ts`: two integration tests — permanent-error create (400) → delete skips server call, row removed, state cleared; full delete-and-recreate flow with fresh UUID.
+- No production code changes were needed; all ACs satisfied by existing implementation.
+
 ### File List
+
+packages/frontend/src/hooks/use-create-todo.test.ts
+packages/frontend/src/hooks/use-delete-todo.test.ts
+packages/frontend/src/components/todo-row.test.tsx
+packages/frontend/src/components/error-message.test.tsx
+
+## Change Log
+
+- 2026-03-06: Added 7 new tests covering permanent error display, delete, and recreate flows (Story 2.3). No production code changes. Frontend: 134 → 141 tests passing.
