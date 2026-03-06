@@ -1,7 +1,7 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api-fetch.js";
-import { classifyError } from "@/lib/classify-error.js";
 import type { TodoInfiniteData, TodoMutationCallbacks } from "@/lib/classify-error.js";
+import { classifyError } from "@/lib/classify-error.js";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 type DeleteTodoCallbacks = TodoMutationCallbacks & {
   getTodoStateEntry: (id: string) => { wasConfirmed: boolean } | undefined;

@@ -160,4 +160,80 @@ describe("apiFetch", () => {
     expect(headers["Content-Type"]).toBe("application/json");
     expect(headers["Authorization"]).toBe("Bearer token");
   });
+
+  it("throws TIMEOUT error on TimeoutError DOMException", async () => {
+    const timeoutError = new DOMException("The operation timed out.", "TimeoutError");
+    mockFetch.mockRejectedValueOnce(timeoutError);
+
+    await expect(apiFetch("/api/todos")).rejects.toMatchObject({
+      code: "TIMEOUT",
+      message: "Request timed out",
+      status: 0,
+    });
+  });
+
+  it("throws ABORTED error on AbortError DOMException", async () => {
+    const abortError = new DOMException("The operation was aborted.", "AbortError");
+    mockFetch.mockRejectedValueOnce(abortError);
+
+    await expect(apiFetch("/api/todos")).rejects.toMatchObject({
+      code: "ABORTED",
+      message: "Request was cancelled",
+      status: 0,
+    });
+  });
+
+  it("passes an AbortSignal to fetch when no timeout provided", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({}),
+    });
+
+    await apiFetch("/api/todos");
+
+    const callArgs = mockFetch.mock.calls[0] as [string, RequestInit];
+    expect(callArgs[1].signal).toBeInstanceOf(AbortSignal);
+    expect(callArgs[1].signal?.aborted).toBe(false);
+  });
+
+  it("uses a different signal when custom timeout is provided", async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({}),
+    });
+
+    await apiFetch("/api/todos");
+    const defaultSignal = (mockFetch.mock.calls[0] as [string, RequestInit])[1].signal;
+
+    mockFetch.mockClear();
+
+    await apiFetch("/api/todos", { timeout: 5000 });
+    const customSignal = (mockFetch.mock.calls[0] as [string, RequestInit])[1].signal;
+
+    // Both are AbortSignals but they are distinct instances
+    expect(customSignal).toBeInstanceOf(AbortSignal);
+    expect(customSignal).not.toBe(defaultSignal);
+  });
+
+  it("merges caller-provided signal with timeout signal", async () => {
+    const customController = new AbortController();
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({}),
+    });
+
+    await apiFetch("/api/todos", { signal: customController.signal });
+
+    const callArgs = mockFetch.mock.calls[0] as [string, RequestInit];
+    const mergedSignal = callArgs[1].signal;
+    // Merged signal is a new signal (not the caller's original)
+    expect(mergedSignal).toBeInstanceOf(AbortSignal);
+    expect(mergedSignal).not.toBe(customController.signal);
+    // Aborting the caller's controller should propagate to the merged signal
+    customController.abort();
+    expect(mergedSignal?.aborted).toBe(true);
+  });
 });
