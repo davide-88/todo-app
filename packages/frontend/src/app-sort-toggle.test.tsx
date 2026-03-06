@@ -144,7 +144,7 @@ describe("sort preserved across tab switches", () => {
 });
 
 describe("sort is session-only (not URL-persisted)", () => {
-  it("fresh App render always starts with order=desc", async () => {
+  it("fresh App render always starts with order=desc (sort is never URL-persisted)", async () => {
     renderApp();
 
     await waitFor(() => {

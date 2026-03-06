@@ -90,9 +90,12 @@ describe("useTodos", () => {
     ];
     const cursor = "cursor-abc";
 
+    let resolvePage2!: (val: unknown) => void;
+    const page2Promise = new Promise((resolve) => { resolvePage2 = resolve; });
+
     mockApiFetch
       .mockResolvedValueOnce({ data: page1, cursor })
-      .mockResolvedValueOnce({ data: page2, cursor: null });
+      .mockReturnValueOnce(page2Promise);
 
     const { result } = renderHook(() => useTodos(), { wrapper: makeWrapper() });
 
@@ -103,6 +106,11 @@ describe("useTodos", () => {
     act(() => {
       void result.current.fetchNextPage();
     });
+
+    // page2 is still pending — isFetchingNextPage must be true
+    await waitFor(() => expect(result.current.isFetchingNextPage).toBe(true));
+
+    act(() => { resolvePage2({ data: page2, cursor: null }); });
 
     await waitFor(() => expect(result.current.isFetchingNextPage).toBe(false));
     expect(result.current.todos).toEqual([...page1, ...page2]);
