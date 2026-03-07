@@ -12,12 +12,17 @@
     "source=todo-app-bashhistory-${devcontainerId},target=/commandhistory,type=volume",
     "source=todo-app-config-${devcontainerId},target=/home/vscode/.claude,type=volume"
   ],
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
+  "containerEnv": {
+    "DATABASE_URL": "postgresql://todoapp:todoapp@host.docker.internal:5432/todoapp"
+  },
   "remoteUser": "vscode",
-  "forwardPorts": [3000, 5173, 5432],
+  "forwardPorts": [3000, 5173],
   "portsAttributes": {
     "3000": { "label": "Backend (Fastify)" },
-    "5173": { "label": "Frontend (Vite)" },
-    "5432": { "label": "PostgreSQL" }
+    "5173": { "label": "Frontend (Vite)" }
   },
   "postCreateCommand": "bash .devcontainer/post-create.sh",
   "customizations": {
