@@ -49,6 +49,8 @@ export const InputArea = ({ onSubmit }: InputAreaProps) => {
           onKeyDown={(e) => {
             if (e.key === "Enter") handleSubmit();
           }}
+          id="new-todo-input"
+          name="new-todo-input"
           placeholder="What needs to be done?"
           aria-label="New todo text"
           aria-describedby={errorId}
