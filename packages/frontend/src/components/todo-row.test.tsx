@@ -215,6 +215,52 @@ describe("TodoRow", () => {
     expect(screen.getByLabelText("Delete todo: Buy groceries")).toBeInTheDocument();
   });
 
+  it("syncing state: checkbox and buttons have tabIndex=-1", () => {
+    render(
+      <TodoRow
+        todo={baseTodo}
+        state="syncing"
+        onToggle={vi.fn()}
+        onDelete={vi.fn()}
+        onRetry={vi.fn()}
+      />,
+    );
+    const checkbox = screen.getByRole("checkbox", { hidden: true });
+    expect(checkbox).toHaveAttribute("tabindex", "-1");
+    const deleteBtn = screen.getByLabelText("Delete todo: Buy groceries");
+    expect(deleteBtn).toHaveAttribute("tabindex", "-1");
+  });
+
+  it("confirmed state: checkbox and buttons do not have tabIndex=-1", () => {
+    render(
+      <TodoRow
+        todo={baseTodo}
+        state="confirmed"
+        onToggle={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+    const checkbox = screen.getByRole("checkbox");
+    expect(checkbox).not.toHaveAttribute("tabindex", "-1");
+    const deleteBtn = screen.getByLabelText("Delete todo: Buy groceries");
+    expect(deleteBtn).not.toHaveAttribute("tabindex", "-1");
+  });
+
+  it("icon buttons have touch-target-friendly size (>= 44px)", () => {
+    render(
+      <TodoRow
+        todo={baseTodo}
+        state="confirmed"
+        onToggle={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+    const deleteBtn = screen.getByLabelText("Delete todo: Buy groceries");
+    // h-11 w-11 = 44x44px for WCAG touch target compliance
+    expect(deleteBtn.className).toMatch(/h-11/);
+    expect(deleteBtn.className).toMatch(/w-11/);
+  });
+
   it("error message renders below the row content, not inline", () => {
     render(
       <TodoRow

@@ -27,4 +27,10 @@ describe("StatusDot", () => {
     const dot = screen.getByRole("status");
     expect(dot.className).toMatch(/h-2|w-2/);
   });
+
+  it("syncing dot respects prefers-reduced-motion", () => {
+    render(<StatusDot variant="syncing" />);
+    const dot = screen.getByRole("status");
+    expect(dot.className).toMatch(/motion-reduce:animate-none/);
+  });
 });

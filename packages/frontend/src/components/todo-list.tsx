@@ -1,3 +1,4 @@
+import { useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button.js";
 import { PlaceholderRow } from "./placeholder-row.js";
 import { TodoRow } from "./todo-row.js";
@@ -32,6 +33,31 @@ export const TodoList = ({
   getErrorMessage,
 }: TodoListProps) => {
   const showPlaceholders = isLoading || todos.length === 0;
+  const checkboxRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
+  const pendingFocusTarget = useRef<string | null>(null);
+
+  const setCheckboxRef = useCallback((id: string, el: HTMLButtonElement | null) => {
+    if (el) {
+      checkboxRefs.current.set(id, el);
+    } else {
+      checkboxRefs.current.delete(id);
+    }
+
+    // If this is the element we're waiting to focus, focus it now
+    if (el && pendingFocusTarget.current === id) {
+      el.focus();
+      pendingFocusTarget.current = null;
+    }
+  }, []);
+
+  const handleDeleteWithFocus = useCallback((id: string) => {
+    const idx = todos.findIndex((t) => t.id === id);
+    const nextId = todos[idx + 1]?.id ?? todos[idx - 1]?.id;
+    if (nextId) {
+      pendingFocusTarget.current = nextId;
+    }
+    onDelete(id);
+  }, [todos, onDelete]);
 
   return (
     <div>
@@ -45,8 +71,9 @@ export const TodoList = ({
                 state={getTodoState?.(todo.id) ?? "confirmed"}
                 errorMessage={getErrorMessage?.(todo.id)}
                 onToggle={onToggle}
-                onDelete={onDelete}
+                onDelete={handleDeleteWithFocus}
                 onRetry={onRetry}
+                checkboxRef={(el) => setCheckboxRef(todo.id, el)}
               />
             ))}
       </div>
