@@ -164,6 +164,74 @@ describe("TodoList", () => {
     expect(row).not.toHaveAttribute("aria-disabled");
   });
 
+  it("after delete, focus moves to next row's checkbox", () => {
+    const todos = [makeTodo("1", "First"), makeTodo("2", "Second"), makeTodo("3", "Third")];
+    const onDelete = vi.fn();
+    const { rerender } = render(
+      <TodoList
+        todos={todos}
+        isLoading={false}
+        hasNextPage={false}
+        isFetchingNextPage={false}
+        onToggle={vi.fn()}
+        onDelete={onDelete}
+        fetchNextPage={vi.fn()}
+      />,
+    );
+    // Click delete on the first todo
+    fireEvent.click(screen.getByLabelText("Delete todo: First"));
+    expect(onDelete).toHaveBeenCalledWith("1");
+
+    // Simulate optimistic removal
+    const remaining = [makeTodo("2", "Second"), makeTodo("3", "Third")];
+    rerender(
+      <TodoList
+        todos={remaining}
+        isLoading={false}
+        hasNextPage={false}
+        isFetchingNextPage={false}
+        onToggle={vi.fn()}
+        onDelete={onDelete}
+        fetchNextPage={vi.fn()}
+      />,
+    );
+    // Focus should move to the next row's checkbox (Second)
+    const nextCheckbox = screen.getByLabelText("Toggle todo: Second");
+    expect(nextCheckbox).toHaveFocus();
+  });
+
+  it("after deleting last row, focus moves to previous row's checkbox", () => {
+    const todos = [makeTodo("1", "First"), makeTodo("2", "Second")];
+    const onDelete = vi.fn();
+    const { rerender } = render(
+      <TodoList
+        todos={todos}
+        isLoading={false}
+        hasNextPage={false}
+        isFetchingNextPage={false}
+        onToggle={vi.fn()}
+        onDelete={onDelete}
+        fetchNextPage={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByLabelText("Delete todo: Second"));
+
+    const remaining = [makeTodo("1", "First")];
+    rerender(
+      <TodoList
+        todos={remaining}
+        isLoading={false}
+        hasNextPage={false}
+        isFetchingNextPage={false}
+        onToggle={vi.fn()}
+        onDelete={onDelete}
+        fetchNextPage={vi.fn()}
+      />,
+    );
+    const prevCheckbox = screen.getByLabelText("Toggle todo: First");
+    expect(prevCheckbox).toHaveFocus();
+  });
+
   it("passes errorMessage to TodoRow via getErrorMessage", () => {
     const todos = [makeTodo("1", "Test todo")];
     const getTodoState = vi.fn().mockReturnValue("permanent-error");

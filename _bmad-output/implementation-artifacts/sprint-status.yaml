@@ -64,10 +64,10 @@ development_status:
   epic-3-retrospective: optional
 
   # ─── Epic 4: Accessibility & Responsive Polish ────────────────────────────────
-  epic-4: backlog
-  4-1-keyboard-navigation-and-focus-management: backlog
-  4-2-screen-reader-support-and-aria: backlog
-  4-3-responsive-layout-and-touch-optimization: backlog
+  epic-4: done
+  4-1-keyboard-navigation-and-focus-management: done
+  4-2-screen-reader-support-and-aria: done
+  4-3-responsive-layout-and-touch-optimization: done
   epic-4-retrospective: optional
 
   # ─── Epic 5: Quality Assurance & CI/CD ───────────────────────────────────────

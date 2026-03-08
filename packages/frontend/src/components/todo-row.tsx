@@ -13,9 +13,10 @@ interface TodoRowProps {
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
   onRetry?: (id: string) => void;
+  checkboxRef?: (el: HTMLButtonElement | null) => void;
 }
 
-export const TodoRow = ({ todo, state, errorMessage, onToggle, onDelete, onRetry }: TodoRowProps) => {
+export const TodoRow = ({ todo, state, errorMessage, onToggle, onDelete, onRetry, checkboxRef }: TodoRowProps) => {
   const isSyncing = state === "syncing";
   const isError = state === "transient-error" || state === "permanent-error";
   const isCompleted = todo.completed;
@@ -40,10 +41,12 @@ export const TodoRow = ({ todo, state, errorMessage, onToggle, onDelete, onRetry
         {!isSyncing && !isError && <StatusDot variant="hidden" />}
 
         <Checkbox
+          ref={checkboxRef}
           checked={isCompleted}
           disabled={isSyncing || isError}
           onCheckedChange={() => onToggle(todo.id)}
           aria-label={`Toggle todo: ${todo.text}`}
+          tabIndex={isSyncing ? -1 : undefined}
         />
 
         <span
@@ -67,6 +70,7 @@ export const TodoRow = ({ todo, state, errorMessage, onToggle, onDelete, onRetry
             size="icon"
             aria-label={`Retry todo: ${todo.text}`}
             onClick={() => onRetry(todo.id)}
+            tabIndex={isSyncing ? -1 : undefined}
           >
             <RotateCcw className="h-4 w-4" />
           </Button>
@@ -78,6 +82,7 @@ export const TodoRow = ({ todo, state, errorMessage, onToggle, onDelete, onRetry
           aria-label={`Delete todo: ${todo.text}`}
           onClick={() => onDelete(todo.id)}
           className={isError ? "" : "opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100"}
+          tabIndex={isSyncing ? -1 : undefined}
         >
           <X className="h-4 w-4" />
         </Button>
