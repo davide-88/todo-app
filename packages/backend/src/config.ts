@@ -24,3 +24,5 @@ export const config = {
   ..._config,
   CORS_ORIGIN: Boolean(_config.CORS_ORIGIN),
 };
+
+console.dir(_config, { depth: null });

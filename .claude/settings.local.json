@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs -I {} bash -c 'echo \"\"=== {} ===\"\" && cat {}')",
+      "Bash(timeout 3 curl -s http://172.19.0.4:80)",
+      "Bash(docker compose logs frontend)"
+    ]
+  }
+}
