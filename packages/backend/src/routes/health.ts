@@ -26,7 +26,9 @@ export function healthRoute(
         return reply.status(200).send({ status: "ok" });
       } catch (err) {
         app.log.error(err);
-        return reply.status(503).send({ status: "error", message: "Database unreachable" });
+        return reply
+          .status(503)
+          .send({ status: "error", message: "Database unreachable" });
       }
     },
   );

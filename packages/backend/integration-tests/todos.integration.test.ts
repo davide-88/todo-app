@@ -34,13 +34,18 @@ describe("POST /api/todos (integration)", () => {
   });
 
   it("upserts on duplicate id (does not duplicate)", async () => {
-    await api("/api/todos", { method: "POST", ...jsonBody({ id: todoId, text: "Original" }) });
+    await api("/api/todos", {
+      method: "POST",
+      ...jsonBody({ id: todoId, text: "Original" }),
+    });
     const secondResponse = await api("/api/todos", {
       method: "POST",
       ...jsonBody({ id: todoId, text: "Updated" }),
     });
     expect(secondResponse.status).toBe(201);
-    expect(((await secondResponse.json()) as { text: string }).text).toBe("Updated");
+    expect(((await secondResponse.json()) as { text: string }).text).toBe(
+      "Updated",
+    );
 
     const list = await api("/api/todos");
     const body = (await list.json()) as { data: unknown[] };
@@ -53,7 +58,9 @@ describe("POST /api/todos (integration)", () => {
       ...jsonBody({ id: todoId, text: "" }),
     });
     expect(res.status).toBe(400);
-    expect(((await res.json()) as { code: string }).code).toBe("VALIDATION_ERROR");
+    expect(((await res.json()) as { code: string }).code).toBe(
+      "VALIDATION_ERROR",
+    );
   });
 
   it("returns 400 for text exceeding maxTextLength", async () => {
@@ -62,15 +69,23 @@ describe("POST /api/todos (integration)", () => {
       ...jsonBody({ id: todoId, text: "x".repeat(501) }),
     });
     expect(res.status).toBe(400);
-    expect(((await res.json()) as { code: string }).code).toBe("VALIDATION_ERROR");
+    expect(((await res.json()) as { code: string }).code).toBe(
+      "VALIDATION_ERROR",
+    );
   });
 });
 
 describe("GET /api/todos (integration)", () => {
   beforeEach(async () => {
-    await api("/api/todos", { method: "POST", ...jsonBody({ id: todoId, text: "First" }) });
+    await api("/api/todos", {
+      method: "POST",
+      ...jsonBody({ id: todoId, text: "First" }),
+    });
     await new Promise((r) => setTimeout(r, 50));
-    await api("/api/todos", { method: "POST", ...jsonBody({ id: todoId2, text: "Second" }) });
+    await api("/api/todos", {
+      method: "POST",
+      ...jsonBody({ id: todoId2, text: "Second" }),
+    });
   });
 
   it("returns todos sorted by createdAt desc by default", async () => {
@@ -82,7 +97,10 @@ describe("GET /api/todos (integration)", () => {
   });
 
   it("filters active todos", async () => {
-    await api(`/api/todos/${todoId}`, { method: "PATCH", ...jsonBody({ completed: true }) });
+    await api(`/api/todos/${todoId}`, {
+      method: "PATCH",
+      ...jsonBody({ completed: true }),
+    });
     const res = await api("/api/todos?status=active");
     const body = (await res.json()) as { data: { text: string }[] };
     expect(body.data.every((t) => t.text !== "First")).toBe(true);
@@ -90,7 +108,10 @@ describe("GET /api/todos (integration)", () => {
   });
 
   it("filters completed todos", async () => {
-    await api(`/api/todos/${todoId}`, { method: "PATCH", ...jsonBody({ completed: true }) });
+    await api(`/api/todos/${todoId}`, {
+      method: "PATCH",
+      ...jsonBody({ completed: true }),
+    });
     const res = await api("/api/todos?status=completed");
     const body = (await res.json()) as { data: { text: string }[] };
     expect(body.data).toHaveLength(1);
@@ -99,7 +120,10 @@ describe("GET /api/todos (integration)", () => {
 
   it("supports cursor pagination", async () => {
     const page1 = await api("/api/todos?limit=1");
-    const p1Body = (await page1.json()) as { data: { text: string }[]; cursor: string | null };
+    const p1Body = (await page1.json()) as {
+      data: { text: string }[];
+      cursor: string | null;
+    };
     expect(p1Body.data).toHaveLength(1);
     expect(p1Body.cursor).not.toBeNull();
 
@@ -112,7 +136,10 @@ describe("GET /api/todos (integration)", () => {
 
 describe("PATCH /api/todos/:id (integration)", () => {
   beforeEach(async () => {
-    await api("/api/todos", { method: "POST", ...jsonBody({ id: todoId, text: "Task" }) });
+    await api("/api/todos", {
+      method: "POST",
+      ...jsonBody({ id: todoId, text: "Task" }),
+    });
   });
 
   it("updates todo and returns updated todo with changed updatedAt", async () => {
@@ -122,7 +149,11 @@ describe("PATCH /api/todos/:id (integration)", () => {
       ...jsonBody({ completed: true }),
     });
     expect(res.status).toBe(200);
-    const body = (await res.json()) as { completed: boolean; updatedAt: string; createdAt: string };
+    const body = (await res.json()) as {
+      completed: boolean;
+      updatedAt: string;
+      createdAt: string;
+    };
     expect(body.completed).toBe(true);
     expect(new Date(body.updatedAt).getTime()).toBeGreaterThanOrEqual(
       new Date(body.createdAt).getTime(),
@@ -141,7 +172,10 @@ describe("PATCH /api/todos/:id (integration)", () => {
 
 describe("DELETE /api/todos/:id (integration)", () => {
   beforeEach(async () => {
-    await api("/api/todos", { method: "POST", ...jsonBody({ id: todoId, text: "Delete me" }) });
+    await api("/api/todos", {
+      method: "POST",
+      ...jsonBody({ id: todoId, text: "Delete me" }),
+    });
   });
 
   it("deletes existing todo and returns 204", async () => {
@@ -150,7 +184,9 @@ describe("DELETE /api/todos/:id (integration)", () => {
   });
 
   it("is idempotent — returns 204 for non-existent todo", async () => {
-    const res = await api("/api/todos/00000000-0000-0000-0000-999999999999", { method: "DELETE" });
+    const res = await api("/api/todos/00000000-0000-0000-0000-999999999999", {
+      method: "DELETE",
+    });
     expect(res.status).toBe(204);
   });
 });

@@ -18,7 +18,10 @@ export interface TodoMutationCallbacks {
   clearTodoState: (id: string) => void;
 }
 
-export function classifyError(error: unknown): { state: TodoUiState; errorMessage?: string } {
+export function classifyError(error: unknown): {
+  state: TodoUiState;
+  errorMessage?: string;
+} {
   if (error instanceof ApiFetchError) {
     const isPermanent =
       error.status === 400 ||

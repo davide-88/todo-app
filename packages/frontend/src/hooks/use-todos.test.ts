@@ -33,7 +33,13 @@ describe("useTodos", () => {
 
   it("returns todos on successful fetch", async () => {
     const todos = [
-      { id: "1", text: "test", completed: false, createdAt: "2024-01-01T00:00:00Z", updatedAt: "2024-01-01T00:00:00Z" },
+      {
+        id: "1",
+        text: "test",
+        completed: false,
+        createdAt: "2024-01-01T00:00:00Z",
+        updatedAt: "2024-01-01T00:00:00Z",
+      },
     ];
     mockApiFetch.mockResolvedValueOnce({ data: todos, cursor: null });
 
@@ -54,7 +60,18 @@ describe("useTodos", () => {
   });
 
   it("sets hasNextPage=true when cursor is returned", async () => {
-    mockApiFetch.mockResolvedValueOnce({ data: [{ id: "1", text: "a", completed: false, createdAt: "2024-01-01T00:00:00Z", updatedAt: "2024-01-01T00:00:00Z" }], cursor: "cursor-xyz" });
+    mockApiFetch.mockResolvedValueOnce({
+      data: [
+        {
+          id: "1",
+          text: "a",
+          completed: false,
+          createdAt: "2024-01-01T00:00:00Z",
+          updatedAt: "2024-01-01T00:00:00Z",
+        },
+      ],
+      cursor: "cursor-xyz",
+    });
 
     const { result } = renderHook(() => useTodos(), { wrapper: makeWrapper() });
 
@@ -65,15 +82,27 @@ describe("useTodos", () => {
   it("passes status and order params to apiFetch", async () => {
     mockApiFetch.mockResolvedValueOnce({ data: [], cursor: null });
 
-    const { result } = renderHook(() => useTodos({ status: "active", order: "asc" }), { wrapper: makeWrapper() });
+    const { result } = renderHook(
+      () => useTodos({ status: "active", order: "asc" }),
+      { wrapper: makeWrapper() },
+    );
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
-    expect(mockApiFetch).toHaveBeenCalledWith(expect.stringContaining("status=active"), undefined);
-    expect(mockApiFetch).toHaveBeenCalledWith(expect.stringContaining("order=asc"), undefined);
+    expect(mockApiFetch).toHaveBeenCalledWith(
+      expect.stringContaining("status=active"),
+      undefined,
+    );
+    expect(mockApiFetch).toHaveBeenCalledWith(
+      expect.stringContaining("order=asc"),
+      undefined,
+    );
   });
 
   it("exposes error when fetch fails", async () => {
-    mockApiFetch.mockRejectedValueOnce({ code: "NETWORK_ERROR", message: "Failed" });
+    mockApiFetch.mockRejectedValueOnce({
+      code: "NETWORK_ERROR",
+      message: "Failed",
+    });
 
     const { result } = renderHook(() => useTodos(), { wrapper: makeWrapper() });
 
@@ -83,15 +112,29 @@ describe("useTodos", () => {
 
   it("fetchNextPage appends second page to todos and passes cursor param", async () => {
     const page1 = [
-      { id: "1", text: "todo 1", completed: false, createdAt: "2024-01-02T00:00:00Z", updatedAt: "2024-01-02T00:00:00Z" },
+      {
+        id: "1",
+        text: "todo 1",
+        completed: false,
+        createdAt: "2024-01-02T00:00:00Z",
+        updatedAt: "2024-01-02T00:00:00Z",
+      },
     ];
     const page2 = [
-      { id: "2", text: "todo 2", completed: false, createdAt: "2024-01-01T00:00:00Z", updatedAt: "2024-01-01T00:00:00Z" },
+      {
+        id: "2",
+        text: "todo 2",
+        completed: false,
+        createdAt: "2024-01-01T00:00:00Z",
+        updatedAt: "2024-01-01T00:00:00Z",
+      },
     ];
     const cursor = "cursor-abc";
 
     let resolvePage2!: (val: unknown) => void;
-    const page2Promise = new Promise((resolve) => { resolvePage2 = resolve; });
+    const page2Promise = new Promise((resolve) => {
+      resolvePage2 = resolve;
+    });
 
     mockApiFetch
       .mockResolvedValueOnce({ data: page1, cursor })
@@ -110,7 +153,9 @@ describe("useTodos", () => {
     // page2 is still pending — isFetchingNextPage must be true
     await waitFor(() => expect(result.current.isFetchingNextPage).toBe(true));
 
-    act(() => { resolvePage2({ data: page2, cursor: null }); });
+    act(() => {
+      resolvePage2({ data: page2, cursor: null });
+    });
 
     await waitFor(() => expect(result.current.isFetchingNextPage).toBe(false));
     expect(result.current.todos).toEqual([...page1, ...page2]);

@@ -68,7 +68,9 @@ describe("TodoRow", () => {
         onRetry={vi.fn()}
       />,
     );
-    expect(screen.getByLabelText("Retry todo: Buy groceries")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Retry todo: Buy groceries"),
+    ).toBeInTheDocument();
   });
 
   it("permanent-error state: shows delete button but no retry", () => {
@@ -81,7 +83,9 @@ describe("TodoRow", () => {
         onDelete={vi.fn()}
       />,
     );
-    expect(screen.getByLabelText("Delete todo: Buy groceries")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Delete todo: Buy groceries"),
+    ).toBeInTheDocument();
     expect(screen.queryByLabelText("Retry todo: Buy groceries")).toBeNull();
   });
 
@@ -156,7 +160,9 @@ describe("TodoRow", () => {
       />,
     );
     expect(screen.queryByLabelText("Retry todo: Buy groceries")).toBeNull();
-    expect(screen.getByLabelText("Delete todo: Buy groceries")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Delete todo: Buy groceries"),
+    ).toBeInTheDocument();
   });
 
   it("error row: delete button always visible (no hover-only class)", () => {
@@ -212,7 +218,9 @@ describe("TodoRow", () => {
       />,
     );
     expect(screen.queryByLabelText("Retry todo: Buy groceries")).toBeNull();
-    expect(screen.getByLabelText("Delete todo: Buy groceries")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Delete todo: Buy groceries"),
+    ).toBeInTheDocument();
   });
 
   it("syncing state: checkbox and buttons have tabIndex=-1", () => {

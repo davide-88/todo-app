@@ -6,7 +6,10 @@ import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/api-fetch.js", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/api-fetch.js")>("@/lib/api-fetch.js");
+  const actual =
+    await vi.importActual<typeof import("@/lib/api-fetch.js")>(
+      "@/lib/api-fetch.js",
+    );
   return { ...actual, apiFetch: vi.fn() };
 });
 
@@ -47,7 +50,10 @@ describe("tab state initialization from URL", () => {
         undefined,
       );
     });
-    expect(screen.getByRole("tab", { name: "Active" })).toHaveAttribute("data-state", "active");
+    expect(screen.getByRole("tab", { name: "Active" })).toHaveAttribute(
+      "data-state",
+      "active",
+    );
     expect(screen.getByRole("tab", { name: "Completed" })).toHaveAttribute(
       "data-state",
       "inactive",
@@ -65,8 +71,14 @@ describe("tab state initialization from URL", () => {
         undefined,
       );
     });
-    expect(screen.getByRole("tab", { name: "Completed" })).toHaveAttribute("data-state", "active");
-    expect(screen.getByRole("tab", { name: "Active" })).toHaveAttribute("data-state", "inactive");
+    expect(screen.getByRole("tab", { name: "Completed" })).toHaveAttribute(
+      "data-state",
+      "active",
+    );
+    expect(screen.getByRole("tab", { name: "Active" })).toHaveAttribute(
+      "data-state",
+      "inactive",
+    );
   });
 
   it("Active tab is selected when URL has invalid todo-status value", async () => {
@@ -80,7 +92,10 @@ describe("tab state initialization from URL", () => {
         undefined,
       );
     });
-    expect(screen.getByRole("tab", { name: "Active" })).toHaveAttribute("data-state", "active");
+    expect(screen.getByRole("tab", { name: "Active" })).toHaveAttribute(
+      "data-state",
+      "active",
+    );
   });
 });
 
@@ -91,7 +106,9 @@ describe("tab switching behavior", () => {
     mockApiFetch.mockClear();
 
     // Radix UI TabsTrigger uses onMouseDown (not onClick) to trigger onValueChange
-    fireEvent.mouseDown(screen.getByRole("tab", { name: "Completed" }), { button: 0 });
+    fireEvent.mouseDown(screen.getByRole("tab", { name: "Completed" }), {
+      button: 0,
+    });
 
     await waitFor(() => {
       expect(mockApiFetch).toHaveBeenCalledWith(
@@ -107,7 +124,9 @@ describe("tab switching behavior", () => {
     await waitFor(() => expect(mockApiFetch).toHaveBeenCalled());
     mockApiFetch.mockClear();
 
-    fireEvent.mouseDown(screen.getByRole("tab", { name: "Active" }), { button: 0 });
+    fireEvent.mouseDown(screen.getByRole("tab", { name: "Active" }), {
+      button: 0,
+    });
 
     await waitFor(() => {
       expect(mockApiFetch).toHaveBeenCalledWith(
@@ -122,9 +141,15 @@ describe("tab switching behavior", () => {
     await waitFor(() => expect(mockApiFetch).toHaveBeenCalled());
     const replaceStateSpy = vi.spyOn(history, "replaceState");
 
-    fireEvent.mouseDown(screen.getByRole("tab", { name: "Completed" }), { button: 0 });
+    fireEvent.mouseDown(screen.getByRole("tab", { name: "Completed" }), {
+      button: 0,
+    });
 
-    expect(replaceStateSpy).toHaveBeenCalledWith(null, "", "?todo-status=completed");
+    expect(replaceStateSpy).toHaveBeenCalledWith(
+      null,
+      "",
+      "?todo-status=completed",
+    );
   });
 
   it("clicking Active tab calls history.replaceState with ?todo-status=active", async () => {
@@ -133,8 +158,14 @@ describe("tab switching behavior", () => {
     await waitFor(() => expect(mockApiFetch).toHaveBeenCalled());
     const replaceStateSpy = vi.spyOn(history, "replaceState");
 
-    fireEvent.mouseDown(screen.getByRole("tab", { name: "Active" }), { button: 0 });
+    fireEvent.mouseDown(screen.getByRole("tab", { name: "Active" }), {
+      button: 0,
+    });
 
-    expect(replaceStateSpy).toHaveBeenCalledWith(null, "", "?todo-status=active");
+    expect(replaceStateSpy).toHaveBeenCalledWith(
+      null,
+      "",
+      "?todo-status=active",
+    );
   });
 });

@@ -6,7 +6,10 @@ import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/api-fetch.js", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/api-fetch.js")>("@/lib/api-fetch.js");
+  const actual =
+    await vi.importActual<typeof import("@/lib/api-fetch.js")>(
+      "@/lib/api-fetch.js",
+    );
   return { ...actual, apiFetch: vi.fn() };
 });
 
@@ -47,7 +50,9 @@ describe("sort toggle — App-level integration", () => {
         undefined,
       );
     });
-    expect(screen.getByRole("button", { name: /sort order: newest first/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /sort order: newest first/i }),
+    ).toBeInTheDocument();
   });
 
   it("clicking sort toggle refetches with order=asc", async () => {
@@ -55,7 +60,9 @@ describe("sort toggle — App-level integration", () => {
     await waitFor(() => expect(mockApiFetch).toHaveBeenCalled());
     mockApiFetch.mockClear();
 
-    fireEvent.click(screen.getByRole("button", { name: /sort order: newest first/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /sort order: newest first/i }),
+    );
 
     await waitFor(() => {
       expect(mockApiFetch).toHaveBeenCalledWith(
@@ -63,14 +70,18 @@ describe("sort toggle — App-level integration", () => {
         undefined,
       );
     });
-    expect(screen.getByRole("button", { name: /sort order: oldest first/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /sort order: oldest first/i }),
+    ).toBeInTheDocument();
   });
 
   it("clicking sort toggle twice refetches with order=desc again and shows Newest first", async () => {
     renderApp();
     await waitFor(() => expect(mockApiFetch).toHaveBeenCalled());
 
-    fireEvent.click(screen.getByRole("button", { name: /sort order: newest first/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /sort order: newest first/i }),
+    );
     await waitFor(() =>
       expect(mockApiFetch).toHaveBeenCalledWith(
         expect.stringContaining("order=asc"),
@@ -79,7 +90,9 @@ describe("sort toggle — App-level integration", () => {
     );
     mockApiFetch.mockClear();
 
-    fireEvent.click(screen.getByRole("button", { name: /sort order: oldest first/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /sort order: oldest first/i }),
+    );
 
     await waitFor(() => {
       expect(mockApiFetch).toHaveBeenCalledWith(
@@ -87,7 +100,9 @@ describe("sort toggle — App-level integration", () => {
         undefined,
       );
     });
-    expect(screen.getByRole("button", { name: /sort order: newest first/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /sort order: newest first/i }),
+    ).toBeInTheDocument();
   });
 });
 
@@ -97,7 +112,9 @@ describe("sort preserved across tab switches", () => {
     await waitFor(() => expect(mockApiFetch).toHaveBeenCalled());
 
     // Set sort to ascending
-    fireEvent.click(screen.getByRole("button", { name: /sort order: newest first/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /sort order: newest first/i }),
+    );
     await waitFor(() =>
       expect(mockApiFetch).toHaveBeenCalledWith(
         expect.stringContaining("order=asc"),
@@ -107,7 +124,9 @@ describe("sort preserved across tab switches", () => {
     mockApiFetch.mockClear();
 
     // Switch to Completed tab
-    fireEvent.mouseDown(screen.getByRole("tab", { name: "Completed" }), { button: 0 });
+    fireEvent.mouseDown(screen.getByRole("tab", { name: "Completed" }), {
+      button: 0,
+    });
 
     await waitFor(() => {
       expect(mockApiFetch).toHaveBeenCalledWith(
@@ -128,7 +147,9 @@ describe("sort preserved across tab switches", () => {
     mockApiFetch.mockClear();
 
     // Switch to Active tab — sort should still be desc (default)
-    fireEvent.mouseDown(screen.getByRole("tab", { name: "Active" }), { button: 0 });
+    fireEvent.mouseDown(screen.getByRole("tab", { name: "Active" }), {
+      button: 0,
+    });
 
     await waitFor(() => {
       expect(mockApiFetch).toHaveBeenCalledWith(
@@ -164,7 +185,9 @@ describe("sort is session-only (not URL-persisted)", () => {
     await waitFor(() => expect(mockApiFetch).toHaveBeenCalled());
     const replaceStateSpy = vi.spyOn(history, "replaceState");
 
-    fireEvent.click(screen.getByRole("button", { name: /sort order: newest first/i }));
+    fireEvent.click(
+      screen.getByRole("button", { name: /sort order: newest first/i }),
+    );
 
     await waitFor(() =>
       expect(mockApiFetch).toHaveBeenCalledWith(

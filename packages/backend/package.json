@@ -9,8 +9,10 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
-    "test:integration": "docker-compose -f ../../docker-compose.yml up -d --wait postgres && DOTENV_CONFIG_PATH=.env.test vitest run --config vitest.integration.config.ts"
+    "test:integration": "docker-compose -f ../../docker-compose.yml up -d --wait postgres && DOTENV_CONFIG_PATH=.env.test vitest run --config vitest.integration.config.ts",
+    "test:integration:ci": "DOTENV_CONFIG_PATH=.env.test vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.1",
@@ -31,6 +33,7 @@
   "devDependencies": {
     "@types/http-errors": "^2.0.5",
     "@types/pg": "^8.11.11",
+    "@vitest/coverage-v8": "^3.2.4",
     "drizzle-kit": "^0.30.4",
     "tsx": "^4.19.2",
     "typescript": "^5.7.3",

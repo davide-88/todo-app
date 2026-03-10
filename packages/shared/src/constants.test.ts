@@ -1,9 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  maxTextLength,
-  pageSize,
-  errorCodes,
-} from "./constants.js";
+import { maxTextLength, pageSize, errorCodes } from "./constants.js";
 
 describe("constants", () => {
   describe("maxTextLength", () => {

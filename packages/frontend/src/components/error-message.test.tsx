@@ -4,7 +4,9 @@ import { ErrorMessage } from "./error-message.js";
 
 describe("ErrorMessage", () => {
   it("renders nothing when state is not permanent-error", () => {
-    const { container } = render(<ErrorMessage state="confirmed" message="oops" />);
+    const { container } = render(
+      <ErrorMessage state="confirmed" message="oops" />,
+    );
     expect(container.firstChild).toBeNull();
   });
 
@@ -16,7 +18,9 @@ describe("ErrorMessage", () => {
   });
 
   it("renders nothing when message is empty even in permanent-error", () => {
-    const { container } = render(<ErrorMessage state="permanent-error" message="" />);
+    const { container } = render(
+      <ErrorMessage state="permanent-error" message="" />,
+    );
     expect(container.firstChild).toBeNull();
   });
 

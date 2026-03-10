@@ -35,7 +35,10 @@ describe("useTodoStates", () => {
     const { result } = renderHook(() => useTodoStates());
 
     act(() => {
-      result.current.setTodoState("id-1", { state: "permanent-error", errorMessage: "Bad input" });
+      result.current.setTodoState("id-1", {
+        state: "permanent-error",
+        errorMessage: "Bad input",
+      });
     });
 
     expect(result.current.getErrorMessage("id-1")).toBe("Bad input");
@@ -61,7 +64,10 @@ describe("useTodoStates", () => {
 
     act(() => {
       result.current.setTodoState("id-1", { state: "syncing" });
-      result.current.setTodoState("id-2", { state: "permanent-error", errorMessage: "Error" });
+      result.current.setTodoState("id-2", {
+        state: "permanent-error",
+        errorMessage: "Error",
+      });
     });
 
     expect(result.current.getTodoState("id-1")).toBe("syncing");
@@ -114,7 +120,10 @@ describe("useTodoStates", () => {
     const { result } = renderHook(() => useTodoStates());
 
     act(() => {
-      result.current.setTodoState("id-1", { state: "syncing", wasConfirmed: true });
+      result.current.setTodoState("id-1", {
+        state: "syncing",
+        wasConfirmed: true,
+      });
     });
 
     const entry = result.current.getTodoStateEntry("id-1");
@@ -128,7 +137,10 @@ describe("useTodoStates", () => {
 
   it("getTodoStateEntry returns full entry including wasConfirmed and pendingOperation", () => {
     const { result } = renderHook(() => useTodoStates());
-    const pendingOp = { type: "create" as const, args: { id: "id-1", text: "hello" } };
+    const pendingOp = {
+      type: "create" as const,
+      args: { id: "id-1", text: "hello" },
+    };
 
     act(() => {
       result.current.setTodoState("id-1", {
@@ -151,7 +163,10 @@ describe("useTodoStates", () => {
       result.current.setTodoState("id-1", {
         state: "syncing",
         wasConfirmed: true,
-        pendingOperation: { type: "toggle", args: { id: "id-1", completed: true } },
+        pendingOperation: {
+          type: "toggle",
+          args: { id: "id-1", completed: true },
+        },
       });
     });
 
@@ -159,7 +174,10 @@ describe("useTodoStates", () => {
       result.current.setTodoState("id-1", {
         state: "transient-error",
         wasConfirmed: true,
-        pendingOperation: { type: "toggle", args: { id: "id-1", completed: true } },
+        pendingOperation: {
+          type: "toggle",
+          args: { id: "id-1", completed: true },
+        },
       });
     });
 
@@ -175,7 +193,10 @@ describe("useTodoStates", () => {
       result.current.setTodoState("id-1", {
         state: "syncing",
         wasConfirmed: false,
-        pendingOperation: { type: "create", args: { id: "id-1", text: "hello" } },
+        pendingOperation: {
+          type: "create",
+          args: { id: "id-1", text: "hello" },
+        },
       });
     });
 
@@ -183,7 +204,10 @@ describe("useTodoStates", () => {
       result.current.setTodoState("id-1", {
         state: "transient-error",
         wasConfirmed: false,
-        pendingOperation: { type: "create", args: { id: "id-1", text: "hello" } },
+        pendingOperation: {
+          type: "create",
+          args: { id: "id-1", text: "hello" },
+        },
       });
     });
 
@@ -195,7 +219,10 @@ describe("useTodoStates", () => {
     const { result } = renderHook(() => useTodoStates());
 
     act(() => {
-      result.current.setTodoState("id-1", { state: "syncing", wasConfirmed: true });
+      result.current.setTodoState("id-1", {
+        state: "syncing",
+        wasConfirmed: true,
+      });
     });
 
     act(() => {
@@ -221,7 +248,10 @@ describe("useTodoStates", () => {
     const { result } = renderHook(() => useTodoStates());
 
     act(() => {
-      result.current.setTodoState("id-1", { state: "syncing", wasConfirmed: true });
+      result.current.setTodoState("id-1", {
+        state: "syncing",
+        wasConfirmed: true,
+      });
     });
     act(() => {
       result.current.clearTodoState("id-1");

@@ -1,6 +1,7 @@
 import type { ApiError } from "@todo-app/shared";
 
-const BASE_URL: string = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000";
+const BASE_URL: string =
+  import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000";
 const parsedTimeout = parseInt(
   (import.meta.env.VITE_API_TIMEOUT as string | undefined) ?? "10000",
   10,
@@ -15,7 +16,12 @@ export class ApiFetchError extends Error implements ApiError {
   details?: unknown;
   status: number;
 
-  constructor(code: string, message: string, details?: unknown, status: number = 0) {
+  constructor(
+    code: string,
+    message: string,
+    details?: unknown,
+    status: number = 0,
+  ) {
     super(message);
     this.name = "ApiFetchError";
     this.code = code;
@@ -42,7 +48,9 @@ export async function apiFetch<T>(
       ...options,
       signal,
       headers: {
-        ...(options?.body !== undefined && { "Content-Type": "application/json" }),
+        ...(options?.body !== undefined && {
+          "Content-Type": "application/json",
+        }),
         ...options?.headers,
       },
     });
@@ -52,13 +60,18 @@ export async function apiFetch<T>(
         throw new ApiFetchError("TIMEOUT", "Request timed out", undefined, 0);
       }
       if (error.name === "AbortError") {
-        throw new ApiFetchError("ABORTED", "Request was cancelled", undefined, 0);
+        throw new ApiFetchError(
+          "ABORTED",
+          "Request was cancelled",
+          undefined,
+          0,
+        );
       }
     }
     throw new ApiFetchError("NETWORK_ERROR", "Network request failed");
   }
   if (!response.ok) {
-    const body = await response.json().catch(() => ({})) as ErrorBody;
+    const body = (await response.json().catch(() => ({}))) as ErrorBody;
     throw new ApiFetchError(
       body.code ?? "UNKNOWN_ERROR",
       body.message ?? response.statusText,

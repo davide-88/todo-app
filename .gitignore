@@ -7,3 +7,5 @@ coverage
 .DS_Store
 .pnpm-store
 **/*/tsconfig.tsbuildinfo
+test-results
+playwright-report

@@ -80,9 +80,9 @@ describe("CreateTodo schema", () => {
   });
 
   it("rejects empty text", () => {
-    expect(
-      Value.Check(CreateTodo, { id: crypto.randomUUID(), text: "" }),
-    ).toBe(false);
+    expect(Value.Check(CreateTodo, { id: crypto.randomUUID(), text: "" })).toBe(
+      false,
+    );
   });
 
   it("rejects text over maxTextLength", () => {
@@ -113,9 +113,9 @@ describe("UpdateTodo schema", () => {
   });
 
   it("rejects extra fields", () => {
-    expect(
-      Value.Check(UpdateTodo, { completed: true, text: "extra" }),
-    ).toBe(false);
+    expect(Value.Check(UpdateTodo, { completed: true, text: "extra" })).toBe(
+      false,
+    );
   });
 });
 

@@ -29,7 +29,9 @@ describe("AppHeader", () => {
 
   it("button has dynamic aria-label", () => {
     render(<AppHeader sortOrder="desc" onToggleSort={vi.fn()} />);
-    const btn = screen.getByRole("button", { name: /sort order: newest first/i });
+    const btn = screen.getByRole("button", {
+      name: /sort order: newest first/i,
+    });
     expect(btn).toBeInTheDocument();
   });
 });

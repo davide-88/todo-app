@@ -1,4 +1,10 @@
-import { createApiFetchMock, makeQueryClient, makeTodo, makeWrapper, QUERY_KEY } from "@/test-utils/mock-api.js";
+import {
+  createApiFetchMock,
+  makeQueryClient,
+  makeTodo,
+  makeWrapper,
+  QUERY_KEY,
+} from "@/test-utils/mock-api.js";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useDeleteTodo } from "./use-delete-todo.js";
@@ -32,19 +38,20 @@ describe("useDeleteTodo", () => {
     });
 
     const callbacks = makeCallbacks();
-    mockApiFetch.mockReturnValue(new Promise(() => { }));
+    mockApiFetch.mockReturnValue(new Promise(() => {}));
 
-    const { result } = renderHook(
-      () => useDeleteTodo(callbacks),
-      { wrapper: makeWrapper(queryClient) },
-    );
+    const { result } = renderHook(() => useDeleteTodo(callbacks), {
+      wrapper: makeWrapper(queryClient),
+    });
 
     act(() => {
       result.current.handleDelete("a");
     });
 
     await waitFor(() => {
-      const data = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
+      const data = queryClient.getQueryData<{
+        pages: { data: { id: string }[] }[];
+      }>(QUERY_KEY);
       const ids = data?.pages[0]?.data.map((t) => t.id);
       expect(ids).not.toContain("a");
       expect(ids).toContain("b");
@@ -67,10 +74,9 @@ describe("useDeleteTodo", () => {
 
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
-    const { result } = renderHook(
-      () => useDeleteTodo(callbacks),
-      { wrapper: makeWrapper(queryClient) },
-    );
+    const { result } = renderHook(() => useDeleteTodo(callbacks), {
+      wrapper: makeWrapper(queryClient),
+    });
 
     act(() => {
       result.current.handleDelete("a");
@@ -80,7 +86,9 @@ describe("useDeleteTodo", () => {
       expect(callbacks.clearTodoState).toHaveBeenCalledWith("a");
     });
     // Todo stays removed from cache (optimistic removal in onMutate is sufficient)
-    const data = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
+    const data = queryClient.getQueryData<{
+      pages: { data: { id: string }[] }[];
+    }>(QUERY_KEY);
     expect(data?.pages[0]?.data.find((t) => t.id === "a")).toBeUndefined();
     expect(data?.pages[0]?.data.find((t) => t.id === "b")).toBeDefined();
     // invalidateQueries must NOT be called — it would reset pagination
@@ -99,10 +107,9 @@ describe("useDeleteTodo", () => {
       new ApiFetchError("NETWORK_ERROR", "Network failed", undefined, 0),
     );
 
-    const { result } = renderHook(
-      () => useDeleteTodo(callbacks),
-      { wrapper: makeWrapper(queryClient) },
-    );
+    const { result } = renderHook(() => useDeleteTodo(callbacks), {
+      wrapper: makeWrapper(queryClient),
+    });
 
     act(() => {
       result.current.handleDelete("a");
@@ -110,7 +117,9 @@ describe("useDeleteTodo", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
-    const data = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
+    const data = queryClient.getQueryData<{
+      pages: { data: { id: string }[] }[];
+    }>(QUERY_KEY);
     const ids = data?.pages[0]?.data.map((t) => t.id);
     expect(ids).toContain("a");
     expect(callbacks.setTodoState).toHaveBeenLastCalledWith(
@@ -128,13 +137,17 @@ describe("useDeleteTodo", () => {
 
     const callbacks = makeCallbacks();
     mockApiFetch.mockRejectedValueOnce(
-      new ApiFetchError("VALIDATION_ERROR", "Permanent failure", undefined, 400),
+      new ApiFetchError(
+        "VALIDATION_ERROR",
+        "Permanent failure",
+        undefined,
+        400,
+      ),
     );
 
-    const { result } = renderHook(
-      () => useDeleteTodo(callbacks),
-      { wrapper: makeWrapper(queryClient) },
-    );
+    const { result } = renderHook(() => useDeleteTodo(callbacks), {
+      wrapper: makeWrapper(queryClient),
+    });
 
     act(() => {
       result.current.handleDelete("a");
@@ -142,11 +155,16 @@ describe("useDeleteTodo", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
-    const data = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
+    const data = queryClient.getQueryData<{
+      pages: { data: { id: string }[] }[];
+    }>(QUERY_KEY);
     expect(data?.pages[0]?.data.some((t) => t.id === "a")).toBe(true);
     expect(callbacks.setTodoState).toHaveBeenLastCalledWith(
       "a",
-      expect.objectContaining({ state: "permanent-error", errorMessage: "Permanent failure" }),
+      expect.objectContaining({
+        state: "permanent-error",
+        errorMessage: "Permanent failure",
+      }),
     );
   });
 
@@ -154,7 +172,10 @@ describe("useDeleteTodo", () => {
     const queryClient = makeQueryClient();
     queryClient.setQueryData(QUERY_KEY, {
       pages: [
-        { data: [makeTodo("a"), makeTodo("b"), makeTodo("c")], cursor: "cursor-1" },
+        {
+          data: [makeTodo("a"), makeTodo("b"), makeTodo("c")],
+          cursor: "cursor-1",
+        },
         { data: [makeTodo("d"), makeTodo("e")], cursor: null },
       ],
       pageParams: [undefined, "cursor-1"],
@@ -165,10 +186,9 @@ describe("useDeleteTodo", () => {
       new ApiFetchError("NETWORK_ERROR", "Network failed", undefined, 0),
     );
 
-    const { result } = renderHook(
-      () => useDeleteTodo(callbacks),
-      { wrapper: makeWrapper(queryClient) },
-    );
+    const { result } = renderHook(() => useDeleteTodo(callbacks), {
+      wrapper: makeWrapper(queryClient),
+    });
 
     act(() => {
       result.current.handleDelete("b");
@@ -176,7 +196,9 @@ describe("useDeleteTodo", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
-    const data = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
+    const data = queryClient.getQueryData<{
+      pages: { data: { id: string }[] }[];
+    }>(QUERY_KEY);
     expect(data?.pages[0]?.data.map((t) => t.id)).toEqual(["a", "b", "c"]);
     expect(data?.pages[1]?.data.map((t) => t.id)).toEqual(["d", "e"]);
   });
@@ -184,7 +206,9 @@ describe("useDeleteTodo", () => {
   it("concurrent deletes on different todos → independent handling", async () => {
     const queryClient = makeQueryClient();
     queryClient.setQueryData(QUERY_KEY, {
-      pages: [{ data: [makeTodo("a"), makeTodo("b"), makeTodo("c")], cursor: null }],
+      pages: [
+        { data: [makeTodo("a"), makeTodo("b"), makeTodo("c")], cursor: null },
+      ],
       pageParams: [undefined],
     });
 
@@ -192,10 +216,9 @@ describe("useDeleteTodo", () => {
     mockApiFetch.mockResolvedValueOnce(undefined);
     mockApiFetch.mockResolvedValueOnce(undefined);
 
-    const { result } = renderHook(
-      () => useDeleteTodo(callbacks),
-      { wrapper: makeWrapper(queryClient) },
-    );
+    const { result } = renderHook(() => useDeleteTodo(callbacks), {
+      wrapper: makeWrapper(queryClient),
+    });
 
     act(() => {
       result.current.handleDelete("a");
@@ -227,10 +250,9 @@ describe("useDeleteTodo", () => {
 
     const callbacks = makeCallbacks({ wasConfirmed: false });
 
-    const { result } = renderHook(
-      () => useDeleteTodo(callbacks),
-      { wrapper: makeWrapper(queryClient) },
-    );
+    const { result } = renderHook(() => useDeleteTodo(callbacks), {
+      wrapper: makeWrapper(queryClient),
+    });
 
     act(() => {
       result.current.handleDelete("a");
@@ -250,17 +272,20 @@ describe("useDeleteTodo", () => {
     const callbacks = makeCallbacks({ wasConfirmed: true });
     mockApiFetch.mockResolvedValueOnce(undefined);
 
-    const { result } = renderHook(
-      () => useDeleteTodo(callbacks),
-      { wrapper: makeWrapper(queryClient) },
-    );
+    const { result } = renderHook(() => useDeleteTodo(callbacks), {
+      wrapper: makeWrapper(queryClient),
+    });
 
     act(() => {
       result.current.handleDelete("a");
     });
 
-    await waitFor(() => expect(callbacks.clearTodoState).toHaveBeenCalledWith("a"));
-    expect(mockApiFetch).toHaveBeenCalledWith("/api/todos/a", { method: "DELETE" });
+    await waitFor(() =>
+      expect(callbacks.clearTodoState).toHaveBeenCalledWith("a"),
+    );
+    expect(mockApiFetch).toHaveBeenCalledWith("/api/todos/a", {
+      method: "DELETE",
+    });
   });
 
   it("server todo (no state entry) delete: DELETE request sent", async () => {
@@ -278,17 +303,20 @@ describe("useDeleteTodo", () => {
     };
     mockApiFetch.mockResolvedValueOnce(undefined);
 
-    const { result } = renderHook(
-      () => useDeleteTodo(callbacks),
-      { wrapper: makeWrapper(queryClient) },
-    );
+    const { result } = renderHook(() => useDeleteTodo(callbacks), {
+      wrapper: makeWrapper(queryClient),
+    });
 
     act(() => {
       result.current.handleDelete("a");
     });
 
-    await waitFor(() => expect(callbacks.clearTodoState).toHaveBeenCalledWith("a"));
-    expect(mockApiFetch).toHaveBeenCalledWith("/api/todos/a", { method: "DELETE" });
+    await waitFor(() =>
+      expect(callbacks.clearTodoState).toHaveBeenCalledWith("a"),
+    );
+    expect(mockApiFetch).toHaveBeenCalledWith("/api/todos/a", {
+      method: "DELETE",
+    });
   });
 
   it("unconfirmed todo delete: row removed from cache with no server call (AC 5)", () => {
@@ -300,10 +328,9 @@ describe("useDeleteTodo", () => {
 
     const callbacks = makeCallbacks({ wasConfirmed: false });
 
-    const { result } = renderHook(
-      () => useDeleteTodo(callbacks),
-      { wrapper: makeWrapper(queryClient) },
-    );
+    const { result } = renderHook(() => useDeleteTodo(callbacks), {
+      wrapper: makeWrapper(queryClient),
+    });
 
     act(() => {
       result.current.handleDelete("a");
@@ -311,7 +338,9 @@ describe("useDeleteTodo", () => {
 
     expect(mockApiFetch).not.toHaveBeenCalled();
     expect(callbacks.clearTodoState).toHaveBeenCalledWith("a");
-    const data = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
+    const data = queryClient.getQueryData<{
+      pages: { data: { id: string }[] }[];
+    }>(QUERY_KEY);
     expect(data?.pages[0]?.data.map((t) => t.id)).toEqual(["b"]);
   });
 
@@ -327,10 +356,9 @@ describe("useDeleteTodo", () => {
       new ApiFetchError("NETWORK_ERROR", "Network failed", undefined, 0),
     );
 
-    const { result } = renderHook(
-      () => useDeleteTodo(callbacks),
-      { wrapper: makeWrapper(queryClient) },
-    );
+    const { result } = renderHook(() => useDeleteTodo(callbacks), {
+      wrapper: makeWrapper(queryClient),
+    });
 
     act(() => {
       result.current.handleDelete("a");
@@ -360,27 +388,50 @@ describe("useDeleteTodo integration with useTodoStates", () => {
     });
 
     mockApiFetch.mockRejectedValueOnce(
-      new ApiFetchError("VALIDATION_ERROR", "Text exceeds maximum length", undefined, 400),
+      new ApiFetchError(
+        "VALIDATION_ERROR",
+        "Text exceeds maximum length",
+        undefined,
+        400,
+      ),
     );
 
     const { result } = renderHook(
       () => {
-        const { setTodoState, clearTodoState, getTodoStateEntry, getTodoState } = useTodoStates();
+        const {
+          setTodoState,
+          clearTodoState,
+          getTodoStateEntry,
+          getTodoState,
+        } = useTodoStates();
         const createMutation = useCreateTodo({ setTodoState, clearTodoState });
-        const deleteMutation = useDeleteTodo({ setTodoState, clearTodoState, getTodoStateEntry });
+        const deleteMutation = useDeleteTodo({
+          setTodoState,
+          clearTodoState,
+          getTodoStateEntry,
+        });
         return { createMutation, deleteMutation, getTodoState };
       },
       { wrapper: makeWrapper(queryClient) },
     );
 
     act(() => {
-      result.current.createMutation.mutate({ id: "failed-id", text: "Too long text" });
+      result.current.createMutation.mutate({
+        id: "failed-id",
+        text: "Too long text",
+      });
     });
 
-    await waitFor(() => expect(result.current.createMutation.isError).toBe(true));
+    await waitFor(() =>
+      expect(result.current.createMutation.isError).toBe(true),
+    );
 
-    const dataBefore = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
-    expect(dataBefore?.pages[0]?.data.some((t) => t.id === "failed-id")).toBe(true);
+    const dataBefore = queryClient.getQueryData<{
+      pages: { data: { id: string }[] }[];
+    }>(QUERY_KEY);
+    expect(dataBefore?.pages[0]?.data.some((t) => t.id === "failed-id")).toBe(
+      true,
+    );
 
     const fetchCallsBefore = mockApiFetch.mock.calls.length;
 
@@ -390,8 +441,12 @@ describe("useDeleteTodo integration with useTodoStates", () => {
 
     expect(mockApiFetch).toHaveBeenCalledTimes(fetchCallsBefore);
 
-    const dataAfter = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
-    expect(dataAfter?.pages[0]?.data.some((t) => t.id === "failed-id")).toBe(false);
+    const dataAfter = queryClient.getQueryData<{
+      pages: { data: { id: string }[] }[];
+    }>(QUERY_KEY);
+    expect(dataAfter?.pages[0]?.data.some((t) => t.id === "failed-id")).toBe(
+      false,
+    );
     // Verify state map is cleared — no stale permanent-error entry
     expect(result.current.getTodoState("failed-id")).toBe("confirmed");
   });
@@ -404,14 +459,28 @@ describe("useDeleteTodo integration with useTodoStates", () => {
     });
 
     mockApiFetch.mockRejectedValueOnce(
-      new ApiFetchError("VALIDATION_ERROR", "Text exceeds maximum length", undefined, 400),
+      new ApiFetchError(
+        "VALIDATION_ERROR",
+        "Text exceeds maximum length",
+        undefined,
+        400,
+      ),
     );
 
     const { result } = renderHook(
       () => {
-        const { setTodoState, clearTodoState, getTodoState, getTodoStateEntry } = useTodoStates();
+        const {
+          setTodoState,
+          clearTodoState,
+          getTodoState,
+          getTodoStateEntry,
+        } = useTodoStates();
         const createMutation = useCreateTodo({ setTodoState, clearTodoState });
-        const deleteMutation = useDeleteTodo({ setTodoState, clearTodoState, getTodoStateEntry });
+        const deleteMutation = useDeleteTodo({
+          setTodoState,
+          clearTodoState,
+          getTodoStateEntry,
+        });
         return { createMutation, deleteMutation, getTodoState };
       },
       { wrapper: makeWrapper(queryClient) },
@@ -419,27 +488,41 @@ describe("useDeleteTodo integration with useTodoStates", () => {
 
     // Step 1: create "id-1" -> 400 permanent-error
     act(() => {
-      result.current.createMutation.mutate({ id: "id-1", text: "Too long text" });
+      result.current.createMutation.mutate({
+        id: "id-1",
+        text: "Too long text",
+      });
     });
-    await waitFor(() => expect(result.current.createMutation.isError).toBe(true));
+    await waitFor(() =>
+      expect(result.current.createMutation.isError).toBe(true),
+    );
     expect(result.current.getTodoState("id-1")).toBe("permanent-error");
 
     // Step 2: delete "id-1" (wasConfirmed=false -> no server call)
     act(() => {
       result.current.deleteMutation.handleDelete("id-1");
     });
-    const dataAfterDelete = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
-    expect(dataAfterDelete?.pages[0]?.data.some((t) => t.id === "id-1")).toBe(false);
+    const dataAfterDelete = queryClient.getQueryData<{
+      pages: { data: { id: string }[] }[];
+    }>(QUERY_KEY);
+    expect(dataAfterDelete?.pages[0]?.data.some((t) => t.id === "id-1")).toBe(
+      false,
+    );
 
     // Step 3: create "id-2" (fresh UUID) with valid text -> 201
     mockApiFetch.mockResolvedValueOnce(makeTodo("id-2"));
     act(() => {
       result.current.createMutation.mutate({ id: "id-2", text: "Valid text" });
     });
-    await waitFor(() => expect(result.current.getTodoState("id-2")).toBe("confirmed"));
+    await waitFor(() =>
+      expect(result.current.getTodoState("id-2")).toBe("confirmed"),
+    );
 
-    const finalData = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
-    const allIds = finalData?.pages.flatMap((p) => p.data).map((t) => t.id) ?? [];
+    const finalData = queryClient.getQueryData<{
+      pages: { data: { id: string }[] }[];
+    }>(QUERY_KEY);
+    const allIds =
+      finalData?.pages.flatMap((p) => p.data).map((t) => t.id) ?? [];
     expect(allIds).toContain("id-2");
     expect(allIds).not.toContain("id-1");
   });
@@ -450,14 +533,20 @@ describe("useDeleteTodo integration with useTodoStates", () => {
     // Simulate two pages loaded in cache
     queryClient.setQueryData(QUERY_KEY, {
       pages: [
-        { data: [makeTodo("p1-todo-1"), makeTodo("p1-todo-2")], cursor: "cursor-abc" },
+        {
+          data: [makeTodo("p1-todo-1"), makeTodo("p1-todo-2")],
+          cursor: "cursor-abc",
+        },
         { data: [makeTodo("p2-todo-1"), makeTodo("p2-todo-2")], cursor: null },
       ],
       pageParams: [undefined, "cursor-abc"],
     });
     queryClient.setQueryData(page2Key, {
       pages: [
-        { data: [makeTodo("p1-todo-1"), makeTodo("p1-todo-2")], cursor: "cursor-abc" },
+        {
+          data: [makeTodo("p1-todo-1"), makeTodo("p1-todo-2")],
+          cursor: "cursor-abc",
+        },
         { data: [makeTodo("p2-todo-1"), makeTodo("p2-todo-2")], cursor: null },
       ],
       pageParams: [undefined, "cursor-abc"],
@@ -468,10 +557,9 @@ describe("useDeleteTodo integration with useTodoStates", () => {
 
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
-    const { result } = renderHook(
-      () => useDeleteTodo(callbacks),
-      { wrapper: makeWrapper(queryClient) },
-    );
+    const { result } = renderHook(() => useDeleteTodo(callbacks), {
+      wrapper: makeWrapper(queryClient),
+    });
 
     act(() => {
       result.current.handleDelete("p1-todo-1");
@@ -485,12 +573,16 @@ describe("useDeleteTodo integration with useTodoStates", () => {
     expect(invalidateSpy).not.toHaveBeenCalled();
 
     // Both pages must still be in cache (only deleted todo removed)
-    const data = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
+    const data = queryClient.getQueryData<{
+      pages: { data: { id: string }[] }[];
+    }>(QUERY_KEY);
     expect(data?.pages).toHaveLength(2);
     expect(data?.pages[1]?.data.map((t) => t.id)).toContain("p2-todo-1");
 
     // Secondary query key also preserves both pages
-    const data2 = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(page2Key);
+    const data2 = queryClient.getQueryData<{
+      pages: { data: { id: string }[] }[];
+    }>(page2Key);
     expect(data2?.pages).toHaveLength(2);
     expect(data2?.pages[1]?.data.map((t) => t.id)).toContain("p2-todo-1");
   });

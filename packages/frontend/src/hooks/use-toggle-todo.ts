@@ -1,14 +1,26 @@
 import { apiFetch } from "@/lib/api-fetch.js";
-import type { TodoInfiniteData, TodoMutationCallbacks } from "@/lib/classify-error.js";
+import type {
+  TodoInfiniteData,
+  TodoMutationCallbacks,
+} from "@/lib/classify-error.js";
 import { classifyError } from "@/lib/classify-error.js";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Todo } from "@todo-app/shared";
 
-export function useToggleTodo({ setTodoState, clearTodoState }: TodoMutationCallbacks) {
+export function useToggleTodo({
+  setTodoState,
+  clearTodoState,
+}: TodoMutationCallbacks) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, completed }: { id: string; completed: boolean }) => {
+    mutationFn: async ({
+      id,
+      completed,
+    }: {
+      id: string;
+      completed: boolean;
+    }) => {
       return apiFetch<Todo>(`/api/todos/${id}`, {
         method: "PATCH",
         body: JSON.stringify({ completed }),
@@ -16,20 +28,25 @@ export function useToggleTodo({ setTodoState, clearTodoState }: TodoMutationCall
     },
     onMutate: async ({ id, completed }) => {
       await queryClient.cancelQueries({ queryKey: ["todos"] });
-      const previousData = queryClient.getQueriesData<TodoInfiniteData>({ queryKey: ["todos"] });
-
-      queryClient.setQueriesData<TodoInfiniteData>({ queryKey: ["todos"] }, (old) => {
-        if (!old) return old;
-        return {
-          ...old,
-          pages: old.pages.map((page) => ({
-            ...page,
-            data: page.data.map((todo) =>
-              todo.id === id ? { ...todo, completed } : todo,
-            ),
-          })),
-        };
+      const previousData = queryClient.getQueriesData<TodoInfiniteData>({
+        queryKey: ["todos"],
       });
+
+      queryClient.setQueriesData<TodoInfiniteData>(
+        { queryKey: ["todos"] },
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              data: page.data.map((todo) =>
+                todo.id === id ? { ...todo, completed } : todo,
+              ),
+            })),
+          };
+        },
+      );
 
       setTodoState(id, {
         state: "syncing",
@@ -39,16 +56,19 @@ export function useToggleTodo({ setTodoState, clearTodoState }: TodoMutationCall
       return { previousData };
     },
     onSuccess: (_data, { id }) => {
-      queryClient.setQueriesData<TodoInfiniteData>({ queryKey: ["todos"] }, (old) => {
-        if (!old) return old;
-        return {
-          ...old,
-          pages: old.pages.map((page) => ({
-            ...page,
-            data: page.data.filter((todo) => todo.id !== id),
-          })),
-        };
-      });
+      queryClient.setQueriesData<TodoInfiniteData>(
+        { queryKey: ["todos"] },
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              data: page.data.filter((todo) => todo.id !== id),
+            })),
+          };
+        },
+      );
       clearTodoState(id);
     },
     onError: (error, { id, completed }, context) => {

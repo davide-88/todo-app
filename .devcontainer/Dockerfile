@@ -3,22 +3,6 @@ FROM mcr.microsoft.com/devcontainers/base:bookworm
 ARG TZ
 ENV TZ="$TZ"
 
-# Add Docker's official apt repo and install CLI + Compose plugin
-RUN export DEBIAN_FRONTEND=noninteractive \
-    && apt-get update && apt-get install -y --no-install-recommends \
-      ca-certificates curl gnupg \
-    && install -m 0755 -d /etc/apt/keyrings \
-    && curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
-    && chmod a+r /etc/apt/keyrings/docker.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian bookworm stable" \
-       > /etc/apt/sources.list.d/docker.list \
-    && apt-get update && apt-get install -y --no-install-recommends \
-      docker-ce-cli \
-      docker-compose-plugin \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN groupadd -f docker && usermod -aG docker vscode
-
 # Install fnm and Node 24 for the vscode user
 USER vscode
 RUN curl -fsSL https://fnm.vercel.app/install | bash \

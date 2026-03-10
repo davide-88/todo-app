@@ -14,7 +14,9 @@ function serializeTodo(row: typeof todosTable.$inferSelect): Todo {
   };
 }
 
-export function createDrizzleTodoRepository(db: NodePgDatabase): TodoRepository {
+export function createDrizzleTodoRepository(
+  db: NodePgDatabase,
+): TodoRepository {
   return {
     async create({ id, text }) {
       const [todo] = await db
@@ -28,10 +30,13 @@ export function createDrizzleTodoRepository(db: NodePgDatabase): TodoRepository 
     async findMany({ status, order: dir = "desc", cursor, limit }) {
       const conditions = [];
       if (status === "active") conditions.push(eq(todosTable.completed, false));
-      if (status === "completed") conditions.push(eq(todosTable.completed, true));
+      if (status === "completed")
+        conditions.push(eq(todosTable.completed, true));
       if (cursor) {
         conditions.push(
-          dir === "asc" ? gt(todosTable.createdAt, cursor) : lt(todosTable.createdAt, cursor),
+          dir === "asc"
+            ? gt(todosTable.createdAt, cursor)
+            : lt(todosTable.createdAt, cursor),
         );
       }
 
@@ -39,7 +44,11 @@ export function createDrizzleTodoRepository(db: NodePgDatabase): TodoRepository 
         .select()
         .from(todosTable)
         .where(conditions.length > 0 ? and(...conditions) : undefined)
-        .orderBy(dir === "asc" ? asc(todosTable.createdAt) : desc(todosTable.createdAt))
+        .orderBy(
+          dir === "asc"
+            ? asc(todosTable.createdAt)
+            : desc(todosTable.createdAt),
+        )
         .limit(limit);
 
       return rows.map(serializeTodo);

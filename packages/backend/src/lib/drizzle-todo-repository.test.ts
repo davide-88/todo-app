@@ -56,7 +56,9 @@ function makeMockDb(overrides: Partial<NodePgDatabase> = {}) {
   } as unknown as NodePgDatabase;
 
   const getSelectMocks = (): SelectMocks => {
-    const fromResult = (select.mock.results[0]!.value as { from: ReturnType<typeof vi.fn> });
+    const fromResult = select.mock.results[0]!.value as {
+      from: ReturnType<typeof vi.fn>;
+    };
     return fromResult.from.mock.results[0]!.value as SelectMocks;
   };
 
@@ -75,7 +77,10 @@ describe("createDrizzleTodoRepository", () => {
 
   describe("create", () => {
     it("inserts a new todo and returns it serialized", async () => {
-      const result = await repo.create({ id: mockTodo.id, text: mockTodo.text });
+      const result = await repo.create({
+        id: mockTodo.id,
+        text: mockTodo.text,
+      });
       expect(db.insert).toHaveBeenCalled();
       expect(result).toEqual(mockTodoSerialized);
     });
@@ -148,7 +153,9 @@ describe("createDrizzleTodoRepository", () => {
 
     it("returns null when todo not found", async () => {
       const returningEmpty = vi.fn().mockResolvedValue([]);
-      const whereUpdateEmpty = vi.fn().mockReturnValue({ returning: returningEmpty });
+      const whereUpdateEmpty = vi
+        .fn()
+        .mockReturnValue({ returning: returningEmpty });
       const setEmpty = vi.fn().mockReturnValue({ where: whereUpdateEmpty });
       const updateEmpty = vi.fn().mockReturnValue({ set: setEmpty });
       ({ db } = makeMockDb({ update: updateEmpty }));

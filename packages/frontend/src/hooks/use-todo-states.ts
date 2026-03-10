@@ -21,7 +21,9 @@ type SetEntryInput = {
 };
 
 export function useTodoStates() {
-  const [stateMap, setStateMap] = useState<Map<string, TodoStateEntry>>(new Map());
+  const [stateMap, setStateMap] = useState<Map<string, TodoStateEntry>>(
+    new Map(),
+  );
 
   const setTodoState = useCallback((id: string, entry: SetEntryInput) => {
     setStateMap((prev) => {
@@ -58,5 +60,11 @@ export function useTodoStates() {
     [stateMap],
   );
 
-  return { getTodoState, getErrorMessage, setTodoState, clearTodoState, getTodoStateEntry };
+  return {
+    getTodoState,
+    getErrorMessage,
+    setTodoState,
+    clearTodoState,
+    getTodoStateEntry,
+  };
 }
