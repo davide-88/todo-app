@@ -9,9 +9,9 @@
  * Requires: Frontend already built (packages/frontend/dist exists)
  */
 
+import { chromium } from "@playwright/test";
 import { spawn, type ChildProcess } from "node:child_process";
 import { resolve } from "node:path";
-import { chromium } from "@playwright/test";
 
 const CLS_THRESHOLD = 0.01;
 
@@ -29,14 +29,18 @@ function startPreview(): Promise<{ process: ChildProcess; url: string }> {
       rej(new Error("Preview server did not start within 15s"));
     }, 15000);
 
-    proc.stdout?.on("data", (chunk: Buffer) => {
+    const onData = (chunk: Buffer) => {
       const line = chunk.toString();
       const match = /Local:\s+(http:\/\/localhost:\d+)/.exec(line);
       if (match?.[1]) {
         clearTimeout(timeout);
         res({ process: proc, url: match[1] });
+      } else {
+        console.log(line);
       }
-    });
+    };
+    proc.stdout?.on("data", onData);
+    proc.stderr?.on("data", onData);
 
     proc.on("error", (e) => {
       clearTimeout(timeout);
