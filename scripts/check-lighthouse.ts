@@ -11,32 +11,39 @@
 
 import { chromium } from "@playwright/test";
 import { spawn, type ChildProcess } from "node:child_process";
+import { createServer } from "node:net";
 import { resolve } from "node:path";
 
 const CLS_THRESHOLD = 0.01;
 
-function startPreview(): Promise<{ process: ChildProcess; url: string }> {
+function getFreePort(): Promise<number> {
+  return new Promise((res, rej) => {
+    const srv = createServer();
+    srv.listen(0, "127.0.0.1", () => {
+      const { port } = srv.address() as { port: number };
+      srv.close((err) => (err ? rej(err) : res(port)));
+    });
+  });
+}
+
+function startPreview(port: number): Promise<ChildProcess> {
   return new Promise((res, rej) => {
     const frontendDir = resolve("packages/frontend");
     const proc = spawn(
       `${frontendDir}/node_modules/.bin/vite`,
-      ["preview", "--port", "0"],
+      ["preview", "--port", String(port), "--strictPort"],
       { cwd: frontendDir, stdio: "pipe" },
     );
 
     const timeout = setTimeout(() => {
       proc.kill();
-      rej(new Error("Preview server did not start within 15s"));
+      rej(new Error("Preview server did not start within 30s"));
     }, 15000);
 
     const onData = (chunk: Buffer) => {
-      const line = chunk.toString();
-      const match = /Local:\s+(http:\/\/localhost:\d+)/.exec(line);
-      if (match?.[1]) {
+      if (/Local:/.test(chunk.toString())) {
         clearTimeout(timeout);
-        res({ process: proc, url: match[1] });
-      } else {
-        console.log(line);
+        res(proc);
       }
     };
     proc.stdout?.on("data", onData);
@@ -53,8 +60,11 @@ async function main() {
   console.log("CLS & Performance Validation");
   console.log("============================\n");
 
+  const port = await getFreePort();
+  const url = `http://localhost:${port}`;
+
   console.log("Starting vite preview server...");
-  const { process: preview, url } = await startPreview();
+  const preview = await startPreview(port);
   console.log(`Preview server ready at ${url}\n`);
 
   try {
