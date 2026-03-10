@@ -11,7 +11,9 @@ export type TodoUiEvent =
   | "PERMANENT_ERROR"
   | "RETRY";
 
-const transitions: Partial<Record<TodoUiState, Partial<Record<TodoUiEvent, TodoUiState>>>> = {
+const transitions: Partial<
+  Record<TodoUiState, Partial<Record<TodoUiEvent, TodoUiState>>>
+> = {
   confirmed: {
     MUTATE: "syncing",
   },
@@ -32,9 +34,7 @@ export function transitionTodoState(
 ): TodoUiState {
   const nextState = transitions[currentState]?.[event];
   if (nextState === undefined) {
-    throw new Error(
-      `Invalid transition: ${currentState} + ${event}`,
-    );
+    throw new Error(`Invalid transition: ${currentState} + ${event}`);
   }
   return nextState;
 }

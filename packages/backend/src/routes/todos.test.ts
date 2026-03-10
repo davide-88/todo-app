@@ -12,7 +12,9 @@ const mockTodo = {
   updatedAt: "2026-01-01T00:00:00.000Z",
 };
 
-function createMockRepo(overrides: Partial<TodoRepository> = {}): TodoRepository {
+function createMockRepo(
+  overrides: Partial<TodoRepository> = {},
+): TodoRepository {
   return {
     create: vi.fn().mockResolvedValue(mockTodo),
     findMany: vi.fn().mockResolvedValue([mockTodo]),
@@ -41,8 +43,14 @@ describe("POST /api/todos", () => {
       payload: { id: mockTodo.id, text: "Buy groceries" },
     });
     expect(res.statusCode).toBe(201);
-    expect(res.json()).toMatchObject({ id: mockTodo.id, text: "Buy groceries" });
-    expect(repo.create).toHaveBeenCalledWith({ id: mockTodo.id, text: "Buy groceries" });
+    expect(res.json()).toMatchObject({
+      id: mockTodo.id,
+      text: "Buy groceries",
+    });
+    expect(repo.create).toHaveBeenCalledWith({
+      id: mockTodo.id,
+      text: "Buy groceries",
+    });
   });
 
   it("returns 400 VALIDATION_ERROR for empty text", async () => {
@@ -111,10 +119,15 @@ describe("GET /api/todos", () => {
 
   it("decodes cursor and passes as Date to repository", async () => {
     const cursorDate = new Date("2026-01-01T00:00:00.000Z");
-    const encodedCursor = Buffer.from(cursorDate.toISOString()).toString("base64url");
+    const encodedCursor = Buffer.from(cursorDate.toISOString()).toString(
+      "base64url",
+    );
     const repo = createMockRepo();
     const app = buildTestApp(repo);
-    await app.inject({ method: "GET", url: `/api/todos?cursor=${encodedCursor}` });
+    await app.inject({
+      method: "GET",
+      url: `/api/todos?cursor=${encodedCursor}`,
+    });
     expect(repo.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ cursor: cursorDate }),
     );
@@ -136,7 +149,9 @@ describe("GET /api/todos", () => {
   });
 
   it("returns null cursor when result is less than page size", async () => {
-    const repo = createMockRepo({ findMany: vi.fn().mockResolvedValue([mockTodo]) });
+    const repo = createMockRepo({
+      findMany: vi.fn().mockResolvedValue([mockTodo]),
+    });
     const app = buildTestApp(repo);
     const res = await app.inject({ method: "GET", url: "/api/todos" });
     const body = res.json<{ cursor: null }>();
@@ -187,7 +202,10 @@ describe("DELETE /api/todos/:id", () => {
   it("returns 204 (idempotent — same result whether todo exists or not)", async () => {
     const repo = createMockRepo();
     const app = buildTestApp(repo);
-    const res = await app.inject({ method: "DELETE", url: `/api/todos/${mockTodo.id}` });
+    const res = await app.inject({
+      method: "DELETE",
+      url: `/api/todos/${mockTodo.id}`,
+    });
     expect(res.statusCode).toBe(204);
     expect(repo.delete).toHaveBeenCalledWith(mockTodo.id);
   });

@@ -7,17 +7,23 @@ const OVER_MAX = "a".repeat(501);
 describe("InputArea", () => {
   it("renders an input with placeholder text", () => {
     render(<InputArea onSubmit={vi.fn()} />);
-    expect(screen.getByPlaceholderText("What needs to be done?")).toBeInTheDocument();
+    expect(
+      screen.getByPlaceholderText("What needs to be done?"),
+    ).toBeInTheDocument();
   });
 
   it("input has aria-label", () => {
     render(<InputArea onSubmit={vi.fn()} />);
-    expect(screen.getByRole("textbox", { name: /new todo text/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("textbox", { name: /new todo text/i }),
+    ).toBeInTheDocument();
   });
 
   it("renders Add Todo button", () => {
     render(<InputArea onSubmit={vi.fn()} />);
-    expect(screen.getByRole("button", { name: /add todo/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /add todo/i }),
+    ).toBeInTheDocument();
   });
 
   it("calls onSubmit with input value when button clicked", () => {
@@ -108,7 +114,9 @@ describe("InputArea", () => {
     fireEvent.change(input, { target: { value: OVER_MAX } });
     expect(screen.getByText("Text exceeds maximum length")).toBeInTheDocument();
     fireEvent.change(input, { target: { value: "short text" } });
-    expect(screen.queryByText("Text exceeds maximum length")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Text exceeds maximum length"),
+    ).not.toBeInTheDocument();
   });
 
   it("input has border-destructive class when validation error shown", () => {

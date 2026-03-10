@@ -39,15 +39,15 @@ describe("transitionTodoState — disallowed transitions", () => {
   });
 
   it("confirmed + TRANSIENT_ERROR → throws", () => {
-    expect(() =>
-      transitionTodoState("confirmed", "TRANSIENT_ERROR"),
-    ).toThrow(/Invalid transition/);
+    expect(() => transitionTodoState("confirmed", "TRANSIENT_ERROR")).toThrow(
+      /Invalid transition/,
+    );
   });
 
   it("confirmed + PERMANENT_ERROR → throws", () => {
-    expect(() =>
-      transitionTodoState("confirmed", "PERMANENT_ERROR"),
-    ).toThrow(/Invalid transition/);
+    expect(() => transitionTodoState("confirmed", "PERMANENT_ERROR")).toThrow(
+      /Invalid transition/,
+    );
   });
 
   it("confirmed + RETRY → throws", () => {

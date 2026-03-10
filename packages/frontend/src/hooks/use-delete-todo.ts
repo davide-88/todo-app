@@ -1,5 +1,8 @@
 import { apiFetch } from "@/lib/api-fetch.js";
-import type { TodoInfiniteData, TodoMutationCallbacks } from "@/lib/classify-error.js";
+import type {
+  TodoInfiniteData,
+  TodoMutationCallbacks,
+} from "@/lib/classify-error.js";
 import { classifyError } from "@/lib/classify-error.js";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -7,7 +10,11 @@ type DeleteTodoCallbacks = TodoMutationCallbacks & {
   getTodoStateEntry: (id: string) => { wasConfirmed: boolean } | undefined;
 };
 
-export function useDeleteTodo({ setTodoState, clearTodoState, getTodoStateEntry }: DeleteTodoCallbacks) {
+export function useDeleteTodo({
+  setTodoState,
+  clearTodoState,
+  getTodoStateEntry,
+}: DeleteTodoCallbacks) {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
@@ -16,18 +23,23 @@ export function useDeleteTodo({ setTodoState, clearTodoState, getTodoStateEntry 
     },
     onMutate: async ({ id }) => {
       await queryClient.cancelQueries({ queryKey: ["todos"] });
-      const previousData = queryClient.getQueriesData<TodoInfiniteData>({ queryKey: ["todos"] });
-
-      queryClient.setQueriesData<TodoInfiniteData>({ queryKey: ["todos"] }, (old) => {
-        if (!old) return old;
-        return {
-          ...old,
-          pages: old.pages.map((page) => ({
-            ...page,
-            data: page.data.filter((todo) => todo.id !== id),
-          })),
-        };
+      const previousData = queryClient.getQueriesData<TodoInfiniteData>({
+        queryKey: ["todos"],
       });
+
+      queryClient.setQueriesData<TodoInfiniteData>(
+        { queryKey: ["todos"] },
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              data: page.data.filter((todo) => todo.id !== id),
+            })),
+          };
+        },
+      );
 
       setTodoState(id, {
         state: "syncing",
@@ -56,16 +68,19 @@ export function useDeleteTodo({ setTodoState, clearTodoState, getTodoStateEntry 
   const handleDelete = (id: string) => {
     const entry = getTodoStateEntry(id);
     if (entry !== undefined && !entry.wasConfirmed) {
-      queryClient.setQueriesData<TodoInfiniteData>({ queryKey: ["todos"] }, (old) => {
-        if (!old) return old;
-        return {
-          ...old,
-          pages: old.pages.map((page) => ({
-            ...page,
-            data: page.data.filter((todo) => todo.id !== id),
-          })),
-        };
-      });
+      queryClient.setQueriesData<TodoInfiniteData>(
+        { queryKey: ["todos"] },
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              data: page.data.filter((todo) => todo.id !== id),
+            })),
+          };
+        },
+      );
       clearTodoState(id);
       return;
     }

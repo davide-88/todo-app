@@ -40,7 +40,12 @@ describe("apiFetch", () => {
       ok: false,
       status: 400,
       statusText: "Bad Request",
-      json: () => Promise.resolve({ code: "VALIDATION_ERROR", message: "Invalid input", details: { field: "text" } }),
+      json: () =>
+        Promise.resolve({
+          code: "VALIDATION_ERROR",
+          message: "Invalid input",
+          details: { field: "text" },
+        }),
     });
 
     await expect(apiFetch("/api/todos")).rejects.toMatchObject({
@@ -94,7 +99,8 @@ describe("apiFetch", () => {
       ok: false,
       status: 400,
       statusText: "Bad Request",
-      json: () => Promise.resolve({ code: "VALIDATION_ERROR", message: "Invalid input" }),
+      json: () =>
+        Promise.resolve({ code: "VALIDATION_ERROR", message: "Invalid input" }),
     });
 
     await expect(apiFetch("/api/todos")).rejects.toMatchObject({
@@ -136,14 +142,18 @@ describe("apiFetch", () => {
     // With body → Content-Type set
     await apiFetch("/api/todos", { method: "POST", body: '{"text":"x"}' });
     const withBody = mockFetch.mock.calls[0] as [string, RequestInit];
-    expect((withBody[1].headers as Record<string, string>)["Content-Type"]).toBe("application/json");
+    expect(
+      (withBody[1].headers as Record<string, string>)["Content-Type"],
+    ).toBe("application/json");
 
     mockFetch.mockClear();
 
     // Without body → Content-Type not set
     await apiFetch("/api/todos/1", { method: "DELETE" });
     const withoutBody = mockFetch.mock.calls[0] as [string, RequestInit];
-    expect((withoutBody[1].headers as Record<string, string>)["Content-Type"]).toBeUndefined();
+    expect(
+      (withoutBody[1].headers as Record<string, string>)["Content-Type"],
+    ).toBeUndefined();
   });
 
   it("merges custom headers alongside Content-Type when body present", async () => {
@@ -153,7 +163,11 @@ describe("apiFetch", () => {
       json: () => Promise.resolve({}),
     });
 
-    await apiFetch("/api/todos", { method: "POST", body: '{}', headers: { Authorization: "Bearer token" } });
+    await apiFetch("/api/todos", {
+      method: "POST",
+      body: "{}",
+      headers: { Authorization: "Bearer token" },
+    });
 
     const callArgs = mockFetch.mock.calls[0] as [string, RequestInit];
     const headers = callArgs[1].headers as Record<string, string>;
@@ -162,7 +176,10 @@ describe("apiFetch", () => {
   });
 
   it("throws TIMEOUT error on TimeoutError DOMException", async () => {
-    const timeoutError = new DOMException("The operation timed out.", "TimeoutError");
+    const timeoutError = new DOMException(
+      "The operation timed out.",
+      "TimeoutError",
+    );
     mockFetch.mockRejectedValueOnce(timeoutError);
 
     await expect(apiFetch("/api/todos")).rejects.toMatchObject({
@@ -173,7 +190,10 @@ describe("apiFetch", () => {
   });
 
   it("throws ABORTED error on AbortError DOMException", async () => {
-    const abortError = new DOMException("The operation was aborted.", "AbortError");
+    const abortError = new DOMException(
+      "The operation was aborted.",
+      "AbortError",
+    );
     mockFetch.mockRejectedValueOnce(abortError);
 
     await expect(apiFetch("/api/todos")).rejects.toMatchObject({
@@ -205,12 +225,14 @@ describe("apiFetch", () => {
     });
 
     await apiFetch("/api/todos");
-    const defaultSignal = (mockFetch.mock.calls[0] as [string, RequestInit])[1].signal;
+    const defaultSignal = (mockFetch.mock.calls[0] as [string, RequestInit])[1]
+      .signal;
 
     mockFetch.mockClear();
 
     await apiFetch("/api/todos", { timeout: 5000 });
-    const customSignal = (mockFetch.mock.calls[0] as [string, RequestInit])[1].signal;
+    const customSignal = (mockFetch.mock.calls[0] as [string, RequestInit])[1]
+      .signal;
 
     // Both are AbortSignals but they are distinct instances
     expect(customSignal).toBeInstanceOf(AbortSignal);

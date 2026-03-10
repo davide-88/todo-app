@@ -4,13 +4,21 @@ import type { PendingOperation } from "@/hooks/use-todo-states.js";
 import { useTodoStates } from "@/hooks/use-todo-states.js";
 import { useToggleTodo } from "@/hooks/use-toggle-todo.js";
 import type { TodoInfiniteData } from "@/lib/classify-error.js";
-import { makeQueryClient, makeTodo, makeWrapper, QUERY_KEY } from "@/test-utils/mock-api.js";
+import {
+  makeQueryClient,
+  makeTodo,
+  makeWrapper,
+  QUERY_KEY,
+} from "@/test-utils/mock-api.js";
 import { useQueryClient } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/api-fetch.js", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/api-fetch.js")>("@/lib/api-fetch.js");
+  const actual =
+    await vi.importActual<typeof import("@/lib/api-fetch.js")>(
+      "@/lib/api-fetch.js",
+    );
   return { ...actual, apiFetch: vi.fn() };
 });
 
@@ -30,7 +38,11 @@ describe("handleRetry integration", () => {
     const { getTodoStateEntry, setTodoState, clearTodoState } = useTodoStates();
     const createMutation = useCreateTodo({ setTodoState, clearTodoState });
     const toggleMutation = useToggleTodo({ setTodoState, clearTodoState });
-    const deleteMutation = useDeleteTodo({ setTodoState, clearTodoState, getTodoStateEntry });
+    const deleteMutation = useDeleteTodo({
+      setTodoState,
+      clearTodoState,
+      getTodoStateEntry,
+    });
 
     const handleRetry = (id: string) => {
       const entry = getTodoStateEntry(id);
@@ -54,23 +66,33 @@ describe("handleRetry integration", () => {
     const handleDelete = (id: string) => {
       const entry = getTodoStateEntry(id);
       if (entry?.pendingOperation?.type === "create") {
-        queryClient.setQueriesData<TodoInfiniteData>({ queryKey: ["todos"] }, (old) => {
-          if (!old) return old;
-          return {
-            ...old,
-            pages: old.pages.map((page) => ({
-              ...page,
-              data: page.data.filter((t) => t.id !== id),
-            })),
-          };
-        });
+        queryClient.setQueriesData<TodoInfiniteData>(
+          { queryKey: ["todos"] },
+          (old) => {
+            if (!old) return old;
+            return {
+              ...old,
+              pages: old.pages.map((page) => ({
+                ...page,
+                data: page.data.filter((t) => t.id !== id),
+              })),
+            };
+          },
+        );
         clearTodoState(id);
         return;
       }
       deleteMutation.mutate({ id });
     };
 
-    return { handleRetry, handleDelete, getTodoStateEntry, createMutation, toggleMutation, deleteMutation };
+    return {
+      handleRetry,
+      handleDelete,
+      getTodoStateEntry,
+      createMutation,
+      toggleMutation,
+      deleteMutation,
+    };
   }
 
   it("retry after failed create re-invokes createMutation", async () => {
@@ -82,7 +104,9 @@ describe("handleRetry integration", () => {
 
     // First call fails, second call succeeds
     mockApiFetch
-      .mockRejectedValueOnce(new ApiFetchError("NETWORK_ERROR", "Network failed", undefined, 0))
+      .mockRejectedValueOnce(
+        new ApiFetchError("NETWORK_ERROR", "Network failed", undefined, 0),
+      )
       .mockResolvedValueOnce(makeTodo("todo-1"));
 
     const { result } = renderHook(() => useRetryHarness(), {
@@ -119,7 +143,9 @@ describe("handleRetry integration", () => {
     });
 
     mockApiFetch
-      .mockRejectedValueOnce(new ApiFetchError("INTERNAL_ERROR", "Server error", undefined, 500))
+      .mockRejectedValueOnce(
+        new ApiFetchError("INTERNAL_ERROR", "Server error", undefined, 500),
+      )
       .mockResolvedValueOnce(makeTodo("todo-1", true));
 
     const { result } = renderHook(() => useRetryHarness(), {
@@ -153,7 +179,9 @@ describe("handleRetry integration", () => {
     });
 
     mockApiFetch
-      .mockRejectedValueOnce(new ApiFetchError("NETWORK_ERROR", "Network failed", undefined, 0))
+      .mockRejectedValueOnce(
+        new ApiFetchError("NETWORK_ERROR", "Network failed", undefined, 0),
+      )
       .mockResolvedValueOnce(undefined);
 
     const { result } = renderHook(() => useRetryHarness(), {
@@ -206,7 +234,9 @@ describe("handleRetry integration", () => {
     });
 
     mockApiFetch
-      .mockRejectedValueOnce(new ApiFetchError("NETWORK_ERROR", "Network failed", undefined, 0))
+      .mockRejectedValueOnce(
+        new ApiFetchError("NETWORK_ERROR", "Network failed", undefined, 0),
+      )
       .mockResolvedValueOnce(makeTodo("todo-1", true));
 
     const { result } = renderHook(() => useRetryHarness(), {
@@ -218,7 +248,9 @@ describe("handleRetry integration", () => {
     });
 
     await waitFor(() => {
-      expect(result.current.getTodoStateEntry("todo-1")?.state).toBe("transient-error");
+      expect(result.current.getTodoStateEntry("todo-1")?.state).toBe(
+        "transient-error",
+      );
     });
 
     act(() => {
@@ -247,17 +279,28 @@ describe("handleRetry integration", () => {
     });
 
     act(() => {
-      result.current.createMutation.mutate({ id: "local-todo", text: "Never persisted" });
+      result.current.createMutation.mutate({
+        id: "local-todo",
+        text: "Never persisted",
+      });
     });
 
     await waitFor(() => {
-      expect(result.current.getTodoStateEntry("local-todo")?.state).toBe("transient-error");
-      expect(result.current.getTodoStateEntry("local-todo")?.pendingOperation?.type).toBe("create");
+      expect(result.current.getTodoStateEntry("local-todo")?.state).toBe(
+        "transient-error",
+      );
+      expect(
+        result.current.getTodoStateEntry("local-todo")?.pendingOperation?.type,
+      ).toBe("create");
     });
 
     // Verify todo is in cache
-    const before = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
-    expect(before?.pages.flatMap((p) => p.data).some((t) => t.id === "local-todo")).toBe(true);
+    const before = queryClient.getQueryData<{
+      pages: { data: { id: string }[] }[];
+    }>(QUERY_KEY);
+    expect(
+      before?.pages.flatMap((p) => p.data).some((t) => t.id === "local-todo"),
+    ).toBe(true);
 
     mockApiFetch.mockClear();
 
@@ -270,8 +313,12 @@ describe("handleRetry integration", () => {
     expect(mockApiFetch).not.toHaveBeenCalled();
 
     // Todo removed from cache
-    const after = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
-    expect(after?.pages.flatMap((p) => p.data).some((t) => t.id === "local-todo")).toBe(false);
+    const after = queryClient.getQueryData<{
+      pages: { data: { id: string }[] }[];
+    }>(QUERY_KEY);
+    expect(
+      after?.pages.flatMap((p) => p.data).some((t) => t.id === "local-todo"),
+    ).toBe(false);
 
     // State cleared
     expect(result.current.getTodoStateEntry("local-todo")).toBeUndefined();

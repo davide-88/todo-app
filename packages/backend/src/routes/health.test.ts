@@ -22,7 +22,9 @@ describe("GET /health", () => {
   });
 
   it("returns 503 { status: 'error' } when DB healthCheck throws", async () => {
-    const repo = { healthCheck: vi.fn().mockRejectedValue(new Error("Connection refused")) };
+    const repo = {
+      healthCheck: vi.fn().mockRejectedValue(new Error("Connection refused")),
+    };
     const app = buildApp(repo);
 
     const res = await app.inject({ method: "GET", url: "/health" });

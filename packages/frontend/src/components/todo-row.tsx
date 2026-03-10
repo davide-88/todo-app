@@ -16,11 +16,22 @@ interface TodoRowProps {
   checkboxRef?: (el: HTMLButtonElement | null) => void;
 }
 
-export const TodoRow = ({ todo, state, errorMessage, onToggle, onDelete, onRetry, checkboxRef }: TodoRowProps) => {
+export const TodoRow = ({
+  todo,
+  state,
+  errorMessage,
+  onToggle,
+  onDelete,
+  onRetry,
+  checkboxRef,
+}: TodoRowProps) => {
   const isSyncing = state === "syncing";
   const isError = state === "transient-error" || state === "permanent-error";
   const isCompleted = todo.completed;
-  const errorId = state === "permanent-error" && errorMessage ? `error-${todo.id}` : undefined;
+  const errorId =
+    state === "permanent-error" && errorMessage
+      ? `error-${todo.id}`
+      : undefined;
 
   return (
     <div
@@ -64,7 +75,7 @@ export const TodoRow = ({ todo, state, errorMessage, onToggle, onDelete, onRetry
           {formatRelativeTime(todo.createdAt)}
         </span>
 
-        {(state === "transient-error") && onRetry && (
+        {state === "transient-error" && onRetry && (
           <Button
             variant="ghost"
             size="icon"
@@ -81,7 +92,11 @@ export const TodoRow = ({ todo, state, errorMessage, onToggle, onDelete, onRetry
           size="icon"
           aria-label={`Delete todo: ${todo.text}`}
           onClick={() => onDelete(todo.id)}
-          className={isError ? "" : "opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100"}
+          className={
+            isError
+              ? ""
+              : "opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100"
+          }
           tabIndex={isSyncing ? -1 : undefined}
         >
           <X className="h-4 w-4" />

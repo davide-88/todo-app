@@ -17,7 +17,10 @@ export function useTodos(options: UseTodosOptions = {}) {
       if (order) params.set("order", order);
       if (pageParam) params.set("cursor", pageParam);
       const qs = params.toString();
-      return apiFetch<TodoListResponse>(`/api/todos${qs ? `?${qs}` : ""}`, undefined);
+      return apiFetch<TodoListResponse>(
+        `/api/todos${qs ? `?${qs}` : ""}`,
+        undefined,
+      );
     },
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.cursor ?? undefined,

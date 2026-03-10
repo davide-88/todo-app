@@ -1,10 +1,16 @@
 import { apiFetch } from "@/lib/api-fetch.js";
-import type { TodoInfiniteData, TodoMutationCallbacks } from "@/lib/classify-error.js";
+import type {
+  TodoInfiniteData,
+  TodoMutationCallbacks,
+} from "@/lib/classify-error.js";
 import { classifyError } from "@/lib/classify-error.js";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { CreateTodo, Todo } from "@todo-app/shared";
 
-export function useCreateTodo({ setTodoState, clearTodoState }: TodoMutationCallbacks) {
+export function useCreateTodo({
+  setTodoState,
+  clearTodoState,
+}: TodoMutationCallbacks) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -17,7 +23,9 @@ export function useCreateTodo({ setTodoState, clearTodoState }: TodoMutationCall
     onMutate: async (input: CreateTodo) => {
       await queryClient.cancelQueries({ queryKey: ["todos"] });
 
-      const previousData = queryClient.getQueriesData<TodoInfiniteData>({ queryKey: ["todos"] });
+      const previousData = queryClient.getQueriesData<TodoInfiniteData>({
+        queryKey: ["todos"],
+      });
 
       const optimisticTodo: Todo = {
         id: input.id,
@@ -32,7 +40,9 @@ export function useCreateTodo({ setTodoState, clearTodoState }: TodoMutationCall
         (old) => {
           if (!old || !old.pages[0]) return old;
           // On retry, the optimistic todo is already in the cache — skip insert
-          const alreadyExists = old.pages.some((p) => p.data.some((t) => t.id === input.id));
+          const alreadyExists = old.pages.some((p) =>
+            p.data.some((t) => t.id === input.id),
+          );
           if (alreadyExists) return old;
           const firstPage = old.pages[0];
           // Remove existing entry with same ID across all pages (handles retry after error)
@@ -42,7 +52,10 @@ export function useCreateTodo({ setTodoState, clearTodoState }: TodoMutationCall
           }));
           filtered[0] = {
             ...firstPage,
-            data: [optimisticTodo, ...firstPage.data.filter((t) => t.id !== input.id)],
+            data: [
+              optimisticTodo,
+              ...firstPage.data.filter((t) => t.id !== input.id),
+            ],
           };
           return { ...old, pages: filtered };
         },
@@ -51,7 +64,10 @@ export function useCreateTodo({ setTodoState, clearTodoState }: TodoMutationCall
       setTodoState(input.id, {
         state: "syncing",
         wasConfirmed: false,
-        pendingOperation: { type: "create", args: { id: input.id, text: input.text } },
+        pendingOperation: {
+          type: "create",
+          args: { id: input.id, text: input.text },
+        },
       });
 
       return { previousData, todoId: input.id };
@@ -67,7 +83,10 @@ export function useCreateTodo({ setTodoState, clearTodoState }: TodoMutationCall
       setTodoState(input.id, {
         ...classifyError(error),
         wasConfirmed: false,
-        pendingOperation: { type: "create", args: { id: input.id, text: input.text } },
+        pendingOperation: {
+          type: "create",
+          args: { id: input.id, text: input.text },
+        },
       });
     },
   });

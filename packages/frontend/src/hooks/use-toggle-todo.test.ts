@@ -1,4 +1,10 @@
-import { createApiFetchMock, makeQueryClient, makeTodo, makeWrapper, QUERY_KEY } from "@/test-utils/mock-api.js";
+import {
+  createApiFetchMock,
+  makeQueryClient,
+  makeTodo,
+  makeWrapper,
+  QUERY_KEY,
+} from "@/test-utils/mock-api.js";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useToggleTodo } from "./use-toggle-todo.js";
@@ -22,7 +28,7 @@ describe("useToggleTodo", () => {
 
     const setTodoState = vi.fn();
     const clearTodoState = vi.fn();
-    mockApiFetch.mockReturnValue(new Promise(() => { }));
+    mockApiFetch.mockReturnValue(new Promise(() => {}));
 
     const { result } = renderHook(
       () => useToggleTodo({ setTodoState, clearTodoState }),
@@ -34,7 +40,9 @@ describe("useToggleTodo", () => {
     });
 
     await waitFor(() => {
-      const data = queryClient.getQueryData<{ pages: { data: { id: string; completed: boolean }[] }[] }>(QUERY_KEY);
+      const data = queryClient.getQueryData<{
+        pages: { data: { id: string; completed: boolean }[] }[];
+      }>(QUERY_KEY);
       expect(data?.pages[0]?.data[0]?.completed).toBe(true);
     });
     expect(setTodoState).toHaveBeenCalledWith("a", {
@@ -53,7 +61,7 @@ describe("useToggleTodo", () => {
 
     const setTodoState = vi.fn();
     const clearTodoState = vi.fn();
-    mockApiFetch.mockReturnValue(new Promise(() => { }));
+    mockApiFetch.mockReturnValue(new Promise(() => {}));
 
     const { result } = renderHook(
       () => useToggleTodo({ setTodoState, clearTodoState }),
@@ -65,7 +73,9 @@ describe("useToggleTodo", () => {
     });
 
     await waitFor(() => {
-      const data = queryClient.getQueryData<{ pages: { data: { id: string; completed: boolean }[] }[] }>(QUERY_KEY);
+      const data = queryClient.getQueryData<{
+        pages: { data: { id: string; completed: boolean }[] }[];
+      }>(QUERY_KEY);
       expect(data?.pages[0]?.data[0]?.completed).toBe(false);
     });
   });
@@ -96,7 +106,9 @@ describe("useToggleTodo", () => {
       expect(clearTodoState).toHaveBeenCalledWith("a");
     });
     // Todo is removed from cache via setQueriesData (not via invalidateQueries)
-    const data = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
+    const data = queryClient.getQueryData<{
+      pages: { data: { id: string }[] }[];
+    }>(QUERY_KEY);
     expect(data?.pages[0]?.data.find((t) => t.id === "a")).toBeUndefined();
     // invalidateQueries must NOT be called — it would reset pagination
     expect(invalidateSpy).not.toHaveBeenCalled();
@@ -126,7 +138,9 @@ describe("useToggleTodo", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
-    const data = queryClient.getQueryData<{ pages: { data: { id: string; completed: boolean }[] }[] }>(QUERY_KEY);
+    const data = queryClient.getQueryData<{
+      pages: { data: { id: string; completed: boolean }[] }[];
+    }>(QUERY_KEY);
     expect(data?.pages[0]?.data[0]?.completed).toBe(false);
     expect(setTodoState).toHaveBeenLastCalledWith("a", {
       state: "transient-error",
@@ -160,7 +174,9 @@ describe("useToggleTodo", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
 
-    const data = queryClient.getQueryData<{ pages: { data: { id: string; completed: boolean }[] }[] }>(QUERY_KEY);
+    const data = queryClient.getQueryData<{
+      pages: { data: { id: string; completed: boolean }[] }[];
+    }>(QUERY_KEY);
     expect(data?.pages[0]?.data[0]?.completed).toBe(true);
     expect(setTodoState).toHaveBeenLastCalledWith("a", {
       state: "permanent-error",
@@ -233,7 +249,10 @@ describe("useToggleTodo", () => {
     const altKey = ["todos", { status: "active", order: "desc" }];
     const twoPages = {
       pages: [
-        { data: [makeTodo("a", false), makeTodo("b", false)], cursor: "cursor-1" },
+        {
+          data: [makeTodo("a", false), makeTodo("b", false)],
+          cursor: "cursor-1",
+        },
         { data: [makeTodo("c", false), makeTodo("d", false)], cursor: null },
       ],
       pageParams: [undefined, "cursor-1"],
@@ -261,13 +280,17 @@ describe("useToggleTodo", () => {
     });
 
     // toggled todo removed from primary key, pages preserved
-    const data = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(QUERY_KEY);
+    const data = queryClient.getQueryData<{
+      pages: { data: { id: string }[] }[];
+    }>(QUERY_KEY);
     expect(data?.pages[0]?.data.find((t) => t.id === "a")).toBeUndefined();
     expect(data?.pages).toHaveLength(2);
     expect(data?.pages[1]?.data.map((t) => t.id)).toContain("c");
 
     // secondary cache key also preserves both pages
-    const data2 = queryClient.getQueryData<{ pages: { data: { id: string }[] }[] }>(altKey);
+    const data2 = queryClient.getQueryData<{
+      pages: { data: { id: string }[] }[];
+    }>(altKey);
     expect(data2?.pages).toHaveLength(2);
 
     // invalidateQueries must NOT be called — it would reset pagination
@@ -277,7 +300,9 @@ describe("useToggleTodo", () => {
   it("concurrent toggles on different todos → independent states", async () => {
     const queryClient = makeQueryClient();
     queryClient.setQueryData(QUERY_KEY, {
-      pages: [{ data: [makeTodo("a", false), makeTodo("b", true)], cursor: null }],
+      pages: [
+        { data: [makeTodo("a", false), makeTodo("b", true)], cursor: null },
+      ],
       pageParams: [undefined],
     });
 

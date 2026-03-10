@@ -74,7 +74,9 @@ describe("TodoList", () => {
         fetchNextPage={vi.fn()}
       />,
     );
-    expect(screen.getByRole("button", { name: /load more/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /load more/i }),
+    ).toBeInTheDocument();
   });
 
   it("disables 'Load more' when isFetchingNextPage=true", () => {
@@ -165,7 +167,11 @@ describe("TodoList", () => {
   });
 
   it("after delete, focus moves to next row's checkbox", () => {
-    const todos = [makeTodo("1", "First"), makeTodo("2", "Second"), makeTodo("3", "Third")];
+    const todos = [
+      makeTodo("1", "First"),
+      makeTodo("2", "Second"),
+      makeTodo("3", "Third"),
+    ];
     const onDelete = vi.fn();
     const { rerender } = render(
       <TodoList

@@ -23,9 +23,9 @@ describe("ApiError schema", () => {
   });
 
   it("rejects missing code", () => {
-    expect(
-      Value.Check(ApiError, { message: "Something went wrong" }),
-    ).toBe(false);
+    expect(Value.Check(ApiError, { message: "Something went wrong" })).toBe(
+      false,
+    );
   });
 
   it("rejects missing message", () => {
@@ -33,8 +33,6 @@ describe("ApiError schema", () => {
   });
 
   it("rejects non-string code", () => {
-    expect(
-      Value.Check(ApiError, { code: 42, message: "error" }),
-    ).toBe(false);
+    expect(Value.Check(ApiError, { code: 42, message: "error" })).toBe(false);
   });
 });

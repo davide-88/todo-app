@@ -37,4 +37,3 @@ export async function teardownSetup(): Promise<void> {
   pool = undefined;
   db = undefined;
 }
-

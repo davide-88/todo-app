@@ -33,9 +33,7 @@ export const TodoListQuery = Type.Object({
   status: Type.Optional(
     Type.Union([Type.Literal("active"), Type.Literal("completed")]),
   ),
-  order: Type.Optional(
-    Type.Union([Type.Literal("asc"), Type.Literal("desc")]),
-  ),
+  order: Type.Optional(Type.Union([Type.Literal("asc"), Type.Literal("desc")])),
   cursor: Type.Optional(Type.String()),
   limit: Type.Optional(Type.Integer()),
 });
