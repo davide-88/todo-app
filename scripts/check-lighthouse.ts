@@ -41,10 +41,9 @@ function startPreview(port: number): Promise<ChildProcess> {
     }, 15000);
 
     const onData = (chunk: Buffer) => {
-      if (/Local:/.test(chunk.toString())) {
-        clearTimeout(timeout);
-        res(proc);
-      }
+      console.log(chunk.toString());
+      clearTimeout(timeout);
+      res(proc);
     };
     proc.stdout?.on("data", onData);
     proc.stderr?.on("data", onData);
