@@ -2,7 +2,7 @@
 title: 'LHCI Autorun in CI Pipeline'
 slug: 'lhci-ci-pipeline'
 created: '2026-03-11'
-status: 'ready-for-dev'
+status: 'Completed'
 stepsCompleted: [1, 2, 3, 4]
 tech_stack: ['@lhci/cli', 'GitHub Actions', 'Docker Compose', 'Nginx', 'Fastify', 'Playwright Chromium']
 files_to_modify: ['.github/workflows/ci.yml', 'lighthouserc.cjs']
@@ -72,7 +72,7 @@ Add a new `lighthouse` job to `ci.yml` that runs `npx lhci autorun`. The job has
 
 ### Tasks
 
-- [ ] Task 1: Add LHCI assertion thresholds to `lighthouserc.cjs`
+- [x] Task 1: Add LHCI assertion thresholds to `lighthouserc.cjs`
   - File: `lighthouserc.cjs`
   - Action: Add an `assert` section to the `ci` config object with minimum score thresholds:
     ```js
@@ -87,7 +87,7 @@ Add a new `lighthouse` job to `ci.yml` that runs `npx lhci autorun`. The job has
     ```
   - Notes: Conservative performance threshold (0.7) since CI runners have variable compute. Accessibility, best-practices, and SEO set higher (0.9) since they're not hardware-dependent.
 
-- [ ] Task 2: Add `lighthouse` job to CI pipeline
+- [x] Task 2: Add `lighthouse` job to CI pipeline
   - File: `.github/workflows/ci.yml`
   - Action: Add a new job after `performance` (or parallel to it):
     ```yaml
@@ -117,10 +117,10 @@ Add a new `lighthouse` job to `ci.yml` that runs `npx lhci autorun`. The job has
 
 ### Acceptance Criteria
 
-- [ ] AC 1: Given the CI pipeline runs, when the `lighthouse` job executes, then `npx lhci autorun` runs successfully: docker compose builds and starts all services, lighthouse audits `localhost:80`, results upload to temporary-public-storage, and a report URL appears in the job logs.
-- [ ] AC 2: Given lighthouse scores are above the configured thresholds (performance >= 0.7, accessibility >= 0.9, best-practices >= 0.9, SEO >= 0.9), when `lhci autorun` completes, then the step exits with code 0 and the job passes.
-- [ ] AC 3: Given a lighthouse score drops below a configured threshold, when `lhci autorun` completes, then the step exits with a non-zero code and the pipeline fails.
-- [ ] AC 4: Given the `lighthouse` job runs in parallel with the `performance` job (both need `e2e-tests`), when both execute, then they do not interfere with each other since the `lighthouse` job uses compose-managed containers and the `performance` job uses GitHub Actions services.
+- [x] AC 1: Given the CI pipeline runs, when the `lighthouse` job executes, then `npx lhci autorun` runs successfully: docker compose builds and starts all services, lighthouse audits `localhost:80`, results upload to temporary-public-storage, and a report URL appears in the job logs.
+- [x] AC 2: Given lighthouse scores are above the configured thresholds (performance >= 0.7, accessibility >= 0.9, best-practices >= 0.9, SEO >= 0.9), when `lhci autorun` completes, then the step exits with code 0 and the job passes.
+- [x] AC 3: Given a lighthouse score drops below a configured threshold, when `lhci autorun` completes, then the step exits with a non-zero code and the pipeline fails.
+- [x] AC 4: Given the `lighthouse` job runs in parallel with the `performance` job (both need `e2e-tests`), when both execute, then they do not interfere with each other since the `lighthouse` job uses compose-managed containers and the `performance` job uses GitHub Actions services.
 
 ## Additional Context
 
@@ -140,6 +140,12 @@ Add a new `lighthouse` job to `ci.yml` that runs `npx lhci autorun`. The job has
   3. Verify lighthouse report URL appears in logs
   4. Verify assertion results appear (pass/fail per category)
   5. Verify `performance` job still passes independently
+
+## Review Notes
+
+- Adversarial review completed
+- Findings: 12 total, 7 fixed, 5 skipped (noise/pre-existing/uncertain)
+- Resolution approach: auto-fix
 
 ### Notes
 
