@@ -225,8 +225,12 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Build Docker images
-        run: docker compose build
+      - name: Start services
+        run: docker compose up -d --wait
+
+      - name: Wait for services to be ready
+        run: |
+          for i in $(seq 1 30); do curl -sf http://localhost:3001/api/health && curl -sf http://localhost:80 && break || sleep 2; done
 
       - name: Lighthouse CI audit
         run: pnpm exec lhci autorun
@@ -241,3 +245,6 @@ jobs:
           name: lighthouse-report
           path: .lighthouseci/
           retention-days: 7
+
+      - name: Stop services
+        run: docker compose down

@@ -30,8 +30,10 @@ function findPlaywrightChrome() {
 }
 
 const chromePath = process.env.CHROME_PATH || findPlaywrightChrome();
-if (chromePath) process.env.CHROME_PATH = chromePath;
-console.log(`Using Chrome path: ${chromePath}`);
+if (chromePath) {
+  process.env.CHROME_PATH = chromePath;
+  console.log(`Using Chrome path: ${chromePath}`);
+}
 
 module.exports = {
   ci: {
@@ -39,9 +41,6 @@ module.exports = {
       ...(chromePath ? { chromePath } : {}),
       url: ["http://localhost:80"],
       numberOfRuns: 3,
-      startServerCommand:
-        "docker compose up -d --no-build --wait && for i in $(seq 1 30); do curl -sf http://localhost:3001/api/health && curl -sf http://localhost:80 && break || sleep 2; done && echo 'Server ready'",
-      startServerTeardownCommand: "docker compose down",
       settings: {
         chromeFlags: "--no-sandbox --disable-setuid-sandbox",
       },
