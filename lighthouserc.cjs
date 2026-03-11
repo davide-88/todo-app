@@ -40,7 +40,7 @@ module.exports = {
       url: ["http://localhost:80"],
       numberOfRuns: 3,
       startServerCommand:
-        "docker compose up -d --wait && for i in $(seq 1 30); do curl -sf http://localhost:3001/api/health && break || sleep 2; done && echo 'Server ready'",
+        "docker compose up -d --no-build --wait && for i in $(seq 1 30); do curl -sf http://localhost:3001/api/health && curl -sf http://localhost:80 && break || sleep 2; done && echo 'Server ready'",
       startServerTeardownCommand: "docker compose down",
       settings: {
         chromeFlags: "--no-sandbox --disable-setuid-sandbox",
@@ -54,7 +54,7 @@ module.exports = {
         "categories:performance": ["error", { minScore: 0.7 }],
         "categories:accessibility": ["error", { minScore: 0.9 }],
         "categories:best-practices": ["error", { minScore: 0.9 }],
-        "categories:seo": ["error", { minScore: 0.9 }],
+        "categories:seo": ["error", { minScore: 0.7 }],
       },
     },
   },

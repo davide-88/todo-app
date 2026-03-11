@@ -225,6 +225,9 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
+      - name: Build Docker images
+        run: docker compose build
+
       - name: Lighthouse CI audit
         run: pnpm exec lhci autorun
         env:
